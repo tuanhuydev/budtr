@@ -114,7 +114,6 @@ yarn-error.log
 
 # Package managers
 package-lock.json
-pnpm-lock.yaml
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
