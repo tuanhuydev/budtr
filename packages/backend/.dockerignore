@@ -1,0 +1,16 @@
+# Docker ignore for backend
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.nyc_output
+.coverage
+.coverage/
+tmp
+.DS_Store
+*.log
+dist
