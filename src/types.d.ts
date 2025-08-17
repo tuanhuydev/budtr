@@ -1,30 +1,30 @@
-declare module "*.svg" {
-  import React from "react";
+declare module '*.svg' {
+  import React from 'react';
   const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
   export default ReactComponent;
 }
 
-declare module "*.png" {
+declare module '*.png' {
   const content: string;
   export default content;
 }
 
-declare module "*.jpg" {
+declare module '*.jpg' {
   const content: string;
   export default content;
 }
 
-declare module "*.jpeg" {
+declare module '*.jpeg' {
   const content: string;
   export default content;
 }
 
-declare module "*.gif" {
+declare module '*.gif' {
   const content: string;
   export default content;
 }
 
-declare module "*.css" {
+declare module '*.css' {
   const content: { [className: string]: string };
   export default content;
 }
