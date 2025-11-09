@@ -16,10 +16,17 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.26.1",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.5",
+    "@mui/x-data-grid": "^8.22.1",
+    "i18next": "^25.7.3",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "react-i18next": "^16.5.1",
+    "tsconfig-paths-webpack-plugin": "^4.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
@@ -28,10 +35,10 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@types/webpack": "^5.28.5",
-    "@types/webpack-dev-server": "^4.7.2",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
     "css-loader": "^7.1.2",
+    "dotenv": "^17.2.3",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-import-resolver-typescript": "^4.4.4",

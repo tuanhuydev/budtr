@@ -14,7 +14,10 @@
     "isolatedModules": true,
     "noEmit": false,
     "jsx": "react-jsx",
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules"],
