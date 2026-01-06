@@ -2,6 +2,11 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import * as path from 'path';
 import webpack from 'webpack';
 import type { Configuration as DevServerConfiguration } from 'webpack-dev-server';
+import * as dotenv from 'dotenv';
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const { ModuleFederationPlugin } = webpack.container;
 
@@ -15,6 +20,7 @@ const config: Configuration = {
   devtool: 'source-map',
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    plugins: [new TsconfigPathsPlugin()],
   },
   module: {
     rules: [
@@ -59,6 +65,12 @@ const config: Configuration = {
         },
       },
     }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        APP_AUTH_URL: JSON.stringify(process.env.APP_AUTH_URL),
+        NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
+      },
+    }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
@@ -80,7 +92,8 @@ const config: Configuration = {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+      'Access-Control-Allow-Headers':
+        'X-Requested-With, content-type, Authorization',
     },
   },
   output: {
