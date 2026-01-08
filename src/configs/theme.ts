@@ -8,6 +8,12 @@ const primaryColors = {
     dark: '#1B5E20',
     contrastText: '#FFFFFF',
   },
+  secondary: {
+    main: '#757575', // Grey
+    light: '#9E9E9E',
+    dark: '#616161',
+    contrastText: '#FFFFFF',
+  },
   background: {
     default: '#FAFAFA',
     paper: '#FFFFFF',
@@ -68,6 +74,11 @@ export const budtrTheme = createTheme({
         variant: 'contained',
         disableElevation: true,
       },
+      styleOverrides: {
+        root: {
+          textTransform: 'capitalize',
+        },
+      },
     },
   },
 });
@@ -82,6 +93,12 @@ export const budtrDarkTheme = createTheme({
       light: '#81C784',
       dark: '#2E7D32',
       contrastText: '#FFFFFF',
+    },
+    secondary: {
+      main: '#9E9E9E', // Grey for dark mode
+      light: '#BDBDBD',
+      dark: '#757575',
+      contrastText: '#000000',
     },
     background: {
       default: '#121212',

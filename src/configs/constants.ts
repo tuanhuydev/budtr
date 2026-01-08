@@ -19,5 +19,19 @@ export const categoryOptions: Array<DropdownOption<ExpenseCategory>> = [
   { label: 'Investment', value: ExpenseCategory.INVESTMENT },
   { label: 'Other', value: ExpenseCategory.OTHER },
 ];
+export const CATEGORY_COLORS: Record<string, string> = {
+  FOOD: '#0088FE',
+  TRANSPORTATION: '#00C49F',
+  ENTERTAINMENT: '#FFBB28',
+  UTILITIES: '#FF8042',
+  HEALTHCARE: '#8884D8',
+  EDUCATION: '#82CA9D',
+  SHOPPING: '#FFC658',
+  TRAVEL: '#FF6B9D',
+  SALARY: '#8DD1E1',
+  BUSINESS: '#D0ED57',
+  INVESTMENT: '#A4DE6C',
+  OTHER: '#9E9E9E',
+};
 
 export const AUTH_URL = process.env.APP_AUTH_URL ?? 'http://localhost:8888';
