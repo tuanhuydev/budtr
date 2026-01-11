@@ -1,5 +1,5 @@
 import { TextField, TextFieldProps } from '@mui/material';
-import { ChangeEvent, useState, useEffect } from 'react';
+import { ChangeEvent, useState, useEffect, useCallback } from 'react';
 
 /**
  * Formats a numeric string by removing leading zeros and adding commas as thousand separators.
@@ -19,6 +19,11 @@ function formatAmount(val: string) {
   return num.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
+// Only allow numbers
+function sanitize(val: string) {
+  return val.replace(/[^0-9]/g, '');
+}
+
 export const AmountInput = (props?: TextFieldProps) => {
   const { value = '', onChange, ...rest } = props || {};
 
@@ -26,27 +31,25 @@ export const AmountInput = (props?: TextFieldProps) => {
     formatAmount(String(value))
   );
 
-  // Only allow number
-  function sanitize(val: string) {
-    return val.replace(/[^0-9]/g, '');
-  }
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const raw = sanitize(e.target.value);
+      const formatted = formatAmount(raw);
+      setDisplayValue(formatted);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const raw = sanitize(e.target.value);
-    const formatted = formatAmount(raw);
-    setDisplayValue(formatted);
-
-    if (onChange) {
-      const syntheticEvent = {
-        ...e,
-        target: {
-          ...e.target,
-          value: raw,
-        },
-      };
-      onChange(syntheticEvent as ChangeEvent<HTMLInputElement>);
-    }
-  };
+      if (onChange) {
+        const syntheticEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: raw,
+          },
+        };
+        onChange(syntheticEvent as ChangeEvent<HTMLInputElement>);
+      }
+    },
+    [onChange]
+  );
 
   useEffect(() => {
     setDisplayValue(formatAmount(String(value)));

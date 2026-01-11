@@ -83,5 +83,7 @@ const TabWrapperSx: SxProps = {
   p: 2,
   borderRadius: 1,
   height: 'calc(100vh - 96px)',
+  maxHeight: '-webkit-fill-available',
   overflow: 'auto',
+  WebkitOverflowScrolling: 'touch',
 };

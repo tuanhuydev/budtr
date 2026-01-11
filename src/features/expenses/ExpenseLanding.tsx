@@ -37,11 +37,10 @@ export const ExpenseLanding = () => {
 
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const now = new Date();
-    const dayOfWeek = now.getDay();
     const startDate = new Date(now);
-    startDate.setDate(now.getDate() - dayOfWeek);
+    startDate.setDate(now.getDate() - 3);
     const endDate = new Date(now);
-    endDate.setDate(now.getDate() + (6 - dayOfWeek));
+    endDate.setDate(now.getDate() + 3);
     return { startDate, endDate };
   });
 
@@ -261,15 +260,23 @@ export const ExpenseLanding = () => {
   return (
     <Box sx={containerSx}>
       <Box sx={headerSx}>
-        <Box display='flex' gap={4} alignItems='center'>
-          <Typography variant='h5' sx={{ fontWeight: 'bold' }}>
-            {t('expenses.title')}
-          </Typography>
+        <Box
+          display='flex'
+          gap={{ xs: 2, md: 4 }}
+          sx={{ width: '100%' }}
+          alignItems={{ md: 'center', xs: 'flex-start' }}
+          flexDirection={{ xs: 'column-reverse', md: 'row' }}
+          flexWrap={'wrap'}
+        >
           <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
+          <Button
+            variant='contained'
+            onClick={handleModalOpen}
+            sx={{ ml: 'auto' }}
+          >
+            {t('common.create')}
+          </Button>
         </Box>
-        <Button variant='contained' onClick={handleModalOpen}>
-          {t('common.create')}
-        </Button>
       </Box>
 
       <Box sx={{ flex: 1, minHeight: 0 }}>
@@ -371,6 +378,7 @@ const containerSx = {
 
 const headerSx = {
   mb: 2,
+  mt: { xs: 2, md: 1 },
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
