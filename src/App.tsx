@@ -19,31 +19,32 @@ const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
   return <Box sx={TabWrapperSx}>{children}</Box>;
 };
 
-const tabs = [
-  {
-    labelKey: 'tabs.overview',
-    content: <OverviewLanding />,
-  },
-  {
-    labelKey: 'tabs.expense',
-    content: <ExpenseLanding />,
-  },
-  {
-    labelKey: 'tabs.budgets',
-    content: (
-      <div>
-        <h3>Budget Content</h3>
-        <p>Theme testing area.</p>
-      </div>
-    ),
-  },
-];
 const App: React.FC = () => {
   const { t } = useBudtrTranslation();
   const [activeTab, setActiveTab] = useState<number>(0);
   const handleChange = (e: SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
+
+  const tabs = [
+    {
+      labelKey: 'tabs.overview',
+      content: <OverviewLanding />,
+    },
+    {
+      labelKey: 'tabs.expense',
+      content: <ExpenseLanding />,
+    },
+    {
+      labelKey: 'tabs.budgets',
+      content: (
+        <div>
+          <h3>Budget Content</h3>
+          <p>Theme testing area.</p>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <QueryProvider>

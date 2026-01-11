@@ -1,9 +1,10 @@
-import HtmlWebpackPlugin from 'html-webpack-plugin';
 import * as path from 'path';
+
+import * as dotenv from 'dotenv';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 import webpack from 'webpack';
 import type { Configuration as DevServerConfiguration } from 'webpack-dev-server';
-import * as dotenv from 'dotenv';
-import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,10 +67,7 @@ const config: Configuration = {
       },
     }),
     new webpack.DefinePlugin({
-      'process.env': {
-        APP_AUTH_URL: JSON.stringify(process.env.APP_AUTH_URL),
-        NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development'),
-      },
+      'process.env.APP_AUTH_URL': JSON.stringify(process.env.APP_AUTH_URL),
     }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
@@ -102,6 +100,11 @@ const config: Configuration = {
     clean: true,
     assetModuleFilename: 'assets/[name][ext]',
     publicPath: 'auto',
+  },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000,
   },
 };
 

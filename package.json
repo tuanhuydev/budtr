@@ -6,6 +6,7 @@
     "dev": "webpack serve --mode development",
     "build": "webpack --mode production",
     "start": "webpack serve --mode development",
+    "serve": "webpack serve --mode production",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
