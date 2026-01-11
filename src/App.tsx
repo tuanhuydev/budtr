@@ -1,3 +1,5 @@
+import { Box, SxProps, Tab, Tabs } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import React, {
   FC,
   Fragment,
@@ -6,76 +8,79 @@ import React, {
   useState,
 } from 'react';
 
-import { Box, Tab, Tabs } from '@mui/material';
-
 import { TabContainer } from './components/PageContainer';
+import { QueryProvider } from './components/providers/QueryProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import { ExpenseLanding } from './features/expenses/ExpenseLanding';
 import { OverviewLanding } from './features/overview/OverviewLanding';
-import { grey } from '@mui/material/colors';
 import { useBudtrTranslation } from './hooks/useI18n';
 
 const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
-  return (
-    <Box
-      sx={{
-        bgcolor: grey[50],
-        p: 2,
-        borderRadius: 1,
-        height: 'calc(100vh - 96px)',
-        overflow: 'auto',
-      }}
-    >
-      {children}
-    </Box>
-  );
+  return <Box sx={TabWrapperSx}>{children}</Box>;
 };
+
+const tabs = [
+  {
+    labelKey: 'tabs.overview',
+    content: <OverviewLanding />,
+  },
+  {
+    labelKey: 'tabs.expense',
+    content: <ExpenseLanding />,
+  },
+  {
+    labelKey: 'tabs.budgets',
+    content: (
+      <div>
+        <h3>Budget Content</h3>
+        <p>Theme testing area.</p>
+      </div>
+    ),
+  },
+];
 const App: React.FC = () => {
   const { t } = useBudtrTranslation();
   const [activeTab, setActiveTab] = useState<number>(0);
   const handleChange = (e: SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
-  return (
-    <ThemeProvider>
-      {/* Tab Navigation */}
-      <Tabs
-        value={activeTab}
-        onChange={handleChange}
-        aria-label='budtr-aria'
-        sx={{
-          background: 'background.paper',
-        }}
-      >
-        <Tab
-          label={t('tabs.overview')}
-          sx={{ background: 'background.paper' }}
-        />
-        <Tab label={t('tabs.expense')} />
-        <Tab label={t('tabs.budgets')} />
-      </Tabs>
 
-      {/* Tab Content */}
-      <Fragment>
-        <TabContainer value={activeTab} index={0}>
-          <TabWrapper>
-            <OverviewLanding />
-          </TabWrapper>
-        </TabContainer>
-        <TabContainer value={activeTab} index={1}>
-          <TabWrapper>
-            <h3>Expense Content</h3>
-            <p>Test theme colors here.</p>
-          </TabWrapper>
-        </TabContainer>
-        <TabContainer value={activeTab} index={2}>
-          <TabWrapper>
-            <h3>Budget Content</h3>
-            <p>Theme testing area.</p>
-          </TabWrapper>
-        </TabContainer>
-      </Fragment>
-    </ThemeProvider>
+  return (
+    <QueryProvider>
+      <ThemeProvider>
+        {/* Tab Navigation */}
+        <Tabs value={activeTab} onChange={handleChange} aria-label='budtr-aria'>
+          {tabs.map((tab, index) => (
+            <Tab
+              key={index}
+              label={t(tab.labelKey)}
+              id={`tab-${index}`}
+              aria-controls={`tabpanel-${index}`}
+              sx={{ background: 'background.paper' }}
+            />
+          ))}
+        </Tabs>
+
+        {/* Tab Content */}
+        <Fragment>
+          {tabs.map((tab, index) => (
+            <TabContainer key={index} value={activeTab} index={index}>
+              <TabWrapper>{tab.content}</TabWrapper>
+            </TabContainer>
+          ))}
+        </Fragment>
+      </ThemeProvider>
+    </QueryProvider>
   );
 };
 
 export default App;
+
+// Styles
+const TabWrapperSx: SxProps = {
+  bgcolor: grey[50],
+  p: 2,
+  borderRadius: 1,
+  height: 'calc(100vh - 96px)',
+  overflow: 'auto',
+};

@@ -32,7 +32,7 @@ export const AmountInput = (props?: TextFieldProps) => {
   }
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let raw = sanitize(e.target.value);
+    const raw = sanitize(e.target.value);
     const formatted = formatAmount(raw);
     setDisplayValue(formatted);
 
@@ -58,10 +58,12 @@ export const AmountInput = (props?: TextFieldProps) => {
       onChange={handleChange}
       placeholder='Amount'
       value={displayValue}
-      inputProps={{
-        inputMode: 'numeric',
-        pattern: '[0-9]*',
-        ...props?.inputProps,
+      slotProps={{
+        ...props?.slotProps,
+        htmlInput: {
+          inputMode: 'numeric',
+          pattern: '[0-9]*',
+        },
       }}
     />
   );

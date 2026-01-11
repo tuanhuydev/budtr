@@ -6,4 +6,5 @@ export type CreateExpenseDTO = {
   source: string;
   type: ExpenseType;
   category: ExpenseCategory;
+  createdAt?: string;
 };
