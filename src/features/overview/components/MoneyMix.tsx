@@ -81,7 +81,10 @@ export const MoneyMix = () => {
     endDate: end,
   });
 
-  const expenses = expensesData?.expenses ?? [];
+  const expenses =
+    expensesData?.expenses.filter(
+      expense => expense.type === ExpenseType.EXPENSE
+    ) ?? [];
 
   const titleKey = useMemo(() => {
     switch (selectedPeriod) {
