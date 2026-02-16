@@ -137,21 +137,8 @@ export const budgetsApi = {
 
 // TODO: Enhance stats API and types
 export const statsApi = {
-  fetchStats: async (
-    apiClient: ApiClient,
-    params?: FetchExpensesParams
-  ): Promise<any> => {
-    const urlParams = new URLSearchParams();
-    if (params?.startDate) {
-      urlParams.append('startDate', params.startDate.toISOString());
-    }
-    if (params?.endDate) {
-      urlParams.append('endDate', params.endDate.toISOString());
-    }
-
-    const url = `${AUTH_URL}/expenses/stats${
-      urlParams.toString() ? `?${urlParams.toString()}` : ''
-    }`;
+  fetchStats: async (apiClient: ApiClient): Promise<any> => {
+    const url = `${AUTH_URL}/expenses/stats`;
 
     const response = await apiClient.request(url, {
       method: 'GET',

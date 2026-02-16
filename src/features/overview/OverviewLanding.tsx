@@ -7,6 +7,7 @@ import { useStats } from '../../hooks/api/useStats';
 
 import { DailySpendContainer } from './components/DailySpendContainer';
 import { MoneyMix } from './components/MoneyMix';
+import { WeeklyComparison } from './components/WeeklyComparison';
 
 export const OverviewLanding = () => {
   const today = new Date();
@@ -17,10 +18,7 @@ export const OverviewLanding = () => {
     endDate: endOfDay(today),
   });
 
-  const { data: stats } = useStats({
-    startDate: startOfDay(today),
-    endDate: endOfDay(today),
-  });
+  const { data: stats } = useStats();
   // eslint-disable-next-line no-console
   console.log('stats', stats);
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
@@ -42,6 +40,7 @@ export const OverviewLanding = () => {
       </Box>
       <Box sx={RightColumnSx}>
         <MoneyMix />
+        <WeeklyComparison />
       </Box>
     </Box>
   );

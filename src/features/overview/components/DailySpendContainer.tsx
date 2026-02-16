@@ -15,7 +15,12 @@ import { categoryOptions, expenseOptions } from '@/configs/constants';
 import { CreateExpenseDTO } from '@/features/expenses/dto/CreateExpenseDTO';
 import { useCreateExpense } from '@/hooks/api/useExpenses';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { ExpenseCategory, ExpenseType } from '@/types/common';
+import {
+  DropdownOption,
+  ExpenseBehavior,
+  ExpenseCategory,
+  ExpenseType,
+} from '@/types/common';
 import { Expense } from '@/types/expense';
 import { formatExpenseAmount } from '@/utils/expenseFormatter';
 
@@ -25,6 +30,7 @@ const DEFAULT_FORM_VALUES: CreateExpenseDTO = {
   amount: 0,
   currency: 'VND',
   source: '',
+  behavior: ExpenseBehavior.FIXED,
 };
 
 interface DailySpendContainerProps {
@@ -60,6 +66,16 @@ export const DailySpendContainer = ({
       console.error('[DailySpendContainer] Failed to save expense', error);
     }
   };
+  const ExpenseBehaviorOptions: Array<DropdownOption<ExpenseBehavior>> = [
+    {
+      label: t(`expenses.${ExpenseBehavior.FIXED}`),
+      value: ExpenseBehavior.FIXED,
+    },
+    {
+      label: t(`expenses.${ExpenseBehavior.VARIABLE}`),
+      value: ExpenseBehavior.VARIABLE,
+    },
+  ];
 
   return (
     <Box sx={ContainerSx}>
@@ -91,25 +107,39 @@ export const DailySpendContainer = ({
             ))}
           </Select>
         </Box>
-        <Select
-          sx={{ flex: 1 }}
-          size='small'
-          value={formData.source}
-          onChange={handleFieldChange('source')}
-          disabled={budgets?.length <= 0}
-          displayEmpty
-        >
-          <MenuItem value=''>
-            {budgets?.length <= 0
-              ? t('overview.noBudgetsAvailable')
-              : t('overview.selectBudget')}
-          </MenuItem>
-          {budgets.map(({ label, value }) => (
-            <MenuItem value={value} key={value}>
-              {label}
+        <Box display='flex' gap={1}>
+          <Select
+            sx={{ flex: 1 }}
+            size='small'
+            value={formData.source}
+            onChange={handleFieldChange('source')}
+            disabled={budgets?.length <= 0}
+            displayEmpty
+          >
+            <MenuItem value=''>
+              {budgets?.length <= 0
+                ? t('overview.noBudgetsAvailable')
+                : t('overview.selectBudget')}
             </MenuItem>
-          ))}
-        </Select>
+            {budgets.map(({ label, value }) => (
+              <MenuItem value={value} key={value}>
+                {label}
+              </MenuItem>
+            ))}
+          </Select>
+          <Select
+            sx={{ width: 200 }}
+            size='small'
+            value={formData.behavior}
+            onChange={handleFieldChange('behavior')}
+          >
+            {ExpenseBehaviorOptions.map(option => (
+              <MenuItem value={option.value} key={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
         <Box gap={1} display='flex'>
           <AmountInput
             value={formData.amount}

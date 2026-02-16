@@ -18,6 +18,11 @@ export enum ExpenseCategory {
   OTHER = 'OTHER',
 }
 
+export enum ExpenseBehavior {
+  FIXED = 'FIXED',
+  VARIABLE = 'VARIABLE',
+}
+
 export type DropdownOption<T> = {
   label: string;
   value: T;
