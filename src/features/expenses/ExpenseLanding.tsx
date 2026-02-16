@@ -131,6 +131,7 @@ export const ExpenseLanding = () => {
         amount: data.amount || 0,
         currency: data.currency || 'VND',
         source: data.source,
+        behavior: data.behavior,
         description: data.description,
         createdAt: data.createdAt,
       };
@@ -219,6 +220,16 @@ export const ExpenseLanding = () => {
           ? t(`categories.${params.row.category}`)
           : t(`categories.OTHER`),
     },
+    {
+      field: 'behavior',
+      headerName: t('expenses.behavior'),
+      width: 100,
+      renderCell: params =>
+        params.row?.behavior
+          ? t(`expenses.${params.row.behavior}`)
+          : t(`categories.OTHER`),
+    },
+
     {
       field: 'createdAt',
       headerName: t('expenses.createdAt'),

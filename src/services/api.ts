@@ -1,4 +1,5 @@
 import { AUTH_URL } from '../configs/constants';
+import { ExpenseBehavior } from '../types/common';
 import type { Expense } from '../types/expense';
 import type { ApiClient } from '../types/shell';
 
@@ -22,6 +23,7 @@ export interface CreateExpenseParams {
   category: string;
   amount: number;
   currency: string;
+  behavior?: ExpenseBehavior;
   source?: string;
   description?: string;
   createdAt?: string;
@@ -137,21 +139,8 @@ export const budgetsApi = {
 
 // TODO: Enhance stats API and types
 export const statsApi = {
-  fetchStats: async (
-    apiClient: ApiClient,
-    params?: FetchExpensesParams
-  ): Promise<any> => {
-    const urlParams = new URLSearchParams();
-    if (params?.startDate) {
-      urlParams.append('startDate', params.startDate.toISOString());
-    }
-    if (params?.endDate) {
-      urlParams.append('endDate', params.endDate.toISOString());
-    }
-
-    const url = `${AUTH_URL}/expenses/stats${
-      urlParams.toString() ? `?${urlParams.toString()}` : ''
-    }`;
+  fetchStats: async (apiClient: ApiClient): Promise<any> => {
+    const url = `${AUTH_URL}/expenses/stats`;
 
     const response = await apiClient.request(url, {
       method: 'GET',

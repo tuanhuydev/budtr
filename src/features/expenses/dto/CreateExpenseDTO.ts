@@ -1,4 +1,4 @@
-import { ExpenseCategory, ExpenseType } from '@/types/common';
+import { ExpenseBehavior, ExpenseCategory, ExpenseType } from '@/types/common';
 
 export type CreateExpenseDTO = {
   amount: number;
@@ -6,5 +6,6 @@ export type CreateExpenseDTO = {
   source: string;
   type: ExpenseType;
   category: ExpenseCategory;
+  behavior: ExpenseBehavior;
   createdAt?: string;
 };
