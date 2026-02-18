@@ -4,21 +4,16 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import { useMemo } from 'react';
 
 import { CATEGORY_COLORS } from '@/configs/constants';
-import { useStats } from '@/hooks/api/useStats';
+import { useStats, WeeklyComparisonItem } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseType } from '@/types/common';
 import { formatExpenseAmount } from '@/utils/expenseFormatter';
-
-type WeeklyComparisonData = {
-  label: string;
-  [key: string]: string | number;
-};
 
 export const WeeklyComparison = () => {
   const { t } = useBudtrTranslation();
   const { data: stats } = useStats();
 
-  const weeklyComparison: WeeklyComparisonData[] =
+  const weeklyComparison: WeeklyComparisonItem[] =
     stats?.weeklyComparison || [];
 
   // Format large numbers to human-readable format
