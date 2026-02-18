@@ -1,6 +1,6 @@
 import { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
-export { ExpenseCategory, ExpenseType } from './common';
+export { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
 export type Expense = {
   id: string;
