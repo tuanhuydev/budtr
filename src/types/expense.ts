@@ -1,6 +1,6 @@
-import { ExpenseCategory, ExpenseType } from './common';
+import { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
-export { ExpenseCategory, ExpenseType } from './common';
+export { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
 export type Expense = {
   id: string;
@@ -10,6 +10,7 @@ export type Expense = {
   source: string;
   description?: string;
   type: ExpenseType;
+  behavior: ExpenseBehavior;
   category: ExpenseCategory;
   createdAt: string; // ISO 8601 format
   updatedAt: string; // ISO 8601 format

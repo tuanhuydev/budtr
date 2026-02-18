@@ -3,10 +3,12 @@ import { startOfDay, endOfDay } from 'date-fns';
 
 import { useBudgets } from '../../hooks/api/useBudgets';
 import { useExpenses } from '../../hooks/api/useExpenses';
-import { useStats } from '../../hooks/api/useStats';
 
+import { CurrentWeekExpenses } from './components/CurrentWeekExpenses';
 import { DailySpendContainer } from './components/DailySpendContainer';
 import { MoneyMix } from './components/MoneyMix';
+import { TopExpenses } from './components/TopExpenses';
+import { WeeklyComparison } from './components/WeeklyComparison';
 
 export const OverviewLanding = () => {
   const today = new Date();
@@ -17,12 +19,6 @@ export const OverviewLanding = () => {
     endDate: endOfDay(today),
   });
 
-  const { data: stats } = useStats({
-    startDate: startOfDay(today),
-    endDate: endOfDay(today),
-  });
-  // eslint-disable-next-line no-console
-  console.log('stats', stats);
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
 
   const expenses = dailyExpenses?.expenses ?? [];
@@ -42,6 +38,9 @@ export const OverviewLanding = () => {
       </Box>
       <Box sx={RightColumnSx}>
         <MoneyMix />
+        <WeeklyComparison />
+        <CurrentWeekExpenses />
+        <TopExpenses />
       </Box>
     </Box>
   );

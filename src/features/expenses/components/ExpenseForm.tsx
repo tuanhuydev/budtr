@@ -15,6 +15,8 @@ import { AmountInput } from '@/components/AmountInput';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { Expense, ExpenseCategory, ExpenseType } from '@/types/expense';
 
+import { DropdownOption, ExpenseBehavior } from '../../../types/common';
+
 interface ExpenseFormProps {
   expense?: Partial<Expense>;
   budgets: any[];
@@ -35,6 +37,7 @@ export const ExpenseForm = ({
     return {
       type: expense?.type || ExpenseType.EXPENSE,
       category: expense?.category || ExpenseCategory.FOOD,
+      behavior: expense?.behavior || ExpenseBehavior.FIXED,
       amount: expense?.amount || 0,
       currency: expense?.currency || 'VND',
       source: expense?.source || '',
@@ -49,6 +52,7 @@ export const ExpenseForm = ({
     setFormData({
       type: expense?.type || ExpenseType.EXPENSE,
       category: expense?.category || ExpenseCategory.FOOD,
+      behavior: expense?.behavior || ExpenseBehavior.FIXED,
       amount: expense?.amount || 0,
       currency: expense?.currency || 'VND',
       source: expense?.source || '',
@@ -59,11 +63,11 @@ export const ExpenseForm = ({
 
   const handleFieldChange =
     (field: keyof Expense) =>
-    (
-      event: SelectChangeEvent<unknown> | React.ChangeEvent<HTMLInputElement>
-    ) => {
-      setFormData(prev => ({ ...prev, [field]: event.target.value }));
-    };
+      (
+        event: SelectChangeEvent<unknown> | React.ChangeEvent<HTMLInputElement>
+      ) => {
+        setFormData(prev => ({ ...prev, [field]: event.target.value }));
+      };
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, amount: Number(event.target.value) }));
@@ -136,29 +140,48 @@ export const ExpenseForm = ({
           </Select>
         </FormControl>
       </Box>
-      <Box>
-        <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('expenses.source')}
-        </Typography>
-        <FormControl fullWidth>
-          <Select
-            value={formData.source || ''}
-            onChange={handleFieldChange('source')}
-            disabled={budgets?.length <= 0}
-            displayEmpty
-          >
-            <MenuItem value=''>
-              {budgets?.length <= 0
-                ? t('overview.noBudgetsAvailable')
-                : t('expenses.source')}
-            </MenuItem>
-            {budgets.map(({ label, value }: any) => (
-              <MenuItem value={value} key={value}>
-                {label}
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
+            {t('expenses.behavior')}
+          </Typography>
+          <FormControl fullWidth>
+            <Select
+              value={formData.behavior || ''}
+              onChange={handleFieldChange('behavior')}
+            >
+              {Object.values(ExpenseBehavior).map(behavior => (
+                <MenuItem key={behavior} value={behavior}>
+                  {t(`expenses.${behavior}`)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
+            {t('expenses.source')}
+          </Typography>
+          <FormControl fullWidth>
+            <Select
+              value={formData.source || ''}
+              onChange={handleFieldChange('source')}
+              disabled={budgets?.length <= 0}
+              displayEmpty
+            >
+              <MenuItem value=''>
+                {budgets?.length <= 0
+                  ? t('overview.noBudgetsAvailable')
+                  : t('expenses.source')}
               </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+              {budgets.map(({ label, value }: DropdownOption<any>) => (
+                <MenuItem value={value} key={value}>
+                  {label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
       <Box>
         <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>

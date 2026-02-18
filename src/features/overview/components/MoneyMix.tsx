@@ -257,6 +257,7 @@ export const MoneyMix = () => {
 // Styles
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 300 },
+  height: 400,
   background: 'white',
   border: `solid 1px ${grey[200]}`,
   borderRadius: 2,
