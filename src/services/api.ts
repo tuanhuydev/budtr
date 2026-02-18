@@ -23,6 +23,7 @@ export interface CreateExpenseParams {
   amount: number;
   currency: string;
   source?: string;
+  behavior?: string;
   description?: string;
   createdAt?: string;
 }
