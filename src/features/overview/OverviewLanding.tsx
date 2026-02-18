@@ -19,8 +19,6 @@ export const OverviewLanding = () => {
   });
 
   const { data: stats } = useStats();
-  // eslint-disable-next-line no-console
-  console.log('stats', stats);
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
 
   const expenses = dailyExpenses?.expenses ?? [];
