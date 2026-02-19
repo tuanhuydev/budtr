@@ -1,12 +1,13 @@
 {
   "name": "budtr",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --mode development",
-    "build": "webpack --mode production",
-    "start": "webpack serve --mode development",
-    "serve": "webpack serve --mode production",
+    "dev": "rsbuild dev",
+    "build": "rsbuild build",
+    "preview": "rsbuild preview",
+    "start": "serve dist",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
@@ -16,8 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.17.0",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -27,23 +27,22 @@
     "@mui/x-data-grid": "^8.22.1",
     "@tanstack/react-query": "^5.90.16",
     "date-fns": "^4.1.0",
-    "i18next": "^25.7.3",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "react-i18next": "^16.5.1",
-    "tsconfig-paths-webpack-plugin": "^4.2.0"
+    "dotenv": "^16.4.5",
+    "i18next": "^25.4.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-i18next": "^15.7.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
-    "@svgr/webpack": "^8.1.0",
+    "@rsbuild/core": "^1.1.30",
+    "@rsbuild/plugin-react": "^1.1.4",
+    "@rsbuild/plugin-svgr": "^1.3.0",
     "@types/node": "^24.0.3",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
-    "@types/webpack": "^5.28.5",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
-    "css-loader": "^7.1.2",
-    "dotenv": "^17.2.3",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -53,15 +52,16 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^15.12.0",
-    "html-webpack-plugin": "^5.6.4",
     "prettier": "^3.6.0",
-    "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.1",
-    "webpack": "^5.101.2",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "serve": "^14.2.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.39.1"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "core-js",
+      "esbuild",
+      "unrs-resolver"
+    ]
   }
 }
