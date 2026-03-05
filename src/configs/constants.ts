@@ -1,6 +1,6 @@
 import { DropdownOption, ExpenseCategory, ExpenseType } from '../types/common';
 
-export const expenseOptions: Array<DropdownOption<ExpenseType>> = [
+export const transactionOptions: Array<DropdownOption<ExpenseType>> = [
   { label: 'Income', value: ExpenseType.INCOME },
   { label: 'Expense', value: ExpenseType.EXPENSE },
 ];

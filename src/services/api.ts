@@ -1,24 +1,24 @@
 import { AUTH_URL } from '../configs/constants';
 import { ExpenseBehavior } from '../types/common';
-import type { Expense } from '../types/expense';
 import type { ApiClient } from '../types/shell';
+import type { Transaction } from '../types/transaction';
 
-export interface FetchExpensesParams {
+export interface FetchTransactionsParams {
   startDate?: Date | null;
   endDate?: Date | null;
   page?: number;
   pageSize?: number;
 }
 
-export interface FetchExpensesResponse {
-  expenses: Expense[];
+export interface FetchTransactionsResponse {
+  expenses: Transaction[];
   page: number;
   limit: number;
   total: number;
   totalPages: number;
 }
 
-export interface CreateExpenseParams {
+export interface CreateTransactionParams {
   type: string;
   category: string;
   amount: number;
@@ -29,15 +29,15 @@ export interface CreateExpenseParams {
   createdAt?: string;
 }
 
-export interface UpdateExpenseParams extends CreateExpenseParams {
+export interface UpdateTransactionParams extends CreateTransactionParams {
   id: string | number;
 }
 
-export const expensesApi = {
-  fetchExpenses: async (
+export const transactionsApi = {
+  fetchTransactions: async (
     apiClient: ApiClient,
-    params?: FetchExpensesParams
-  ): Promise<FetchExpensesResponse> => {
+    params?: FetchTransactionsParams
+  ): Promise<FetchTransactionsResponse> => {
     const urlParams = new URLSearchParams();
     if (params?.startDate) {
       urlParams.append('startDate', params.startDate.toISOString());
@@ -68,10 +68,10 @@ export const expensesApi = {
     return data;
   },
 
-  createExpense: async (
+  createTransaction: async (
     apiClient: ApiClient,
-    data: CreateExpenseParams
-  ): Promise<Expense> => {
+    data: CreateTransactionParams
+  ): Promise<Transaction> => {
     const response = await apiClient.request(`${AUTH_URL}/expenses`, {
       method: 'POST',
       headers: {
@@ -81,16 +81,16 @@ export const expensesApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create expense');
+      throw new Error('Failed to create transaction');
     }
 
     return response.json();
   },
 
-  updateExpense: async (
+  updateTransaction: async (
     apiClient: ApiClient,
-    { id, ...data }: UpdateExpenseParams
-  ): Promise<Expense> => {
+    { id, ...data }: UpdateTransactionParams
+  ): Promise<Transaction> => {
     const response = await apiClient.request(`${AUTH_URL}/expenses/${id}`, {
       method: 'PATCH',
       headers: {
@@ -100,13 +100,13 @@ export const expensesApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update expense');
+      throw new Error('Failed to update transaction');
     }
 
     return response.json();
   },
 
-  deleteExpense: async (
+  deleteTransaction: async (
     apiClient: ApiClient,
     id: string | number
   ): Promise<void> => {
@@ -115,7 +115,7 @@ export const expensesApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to delete expense');
+      throw new Error('Failed to delete transaction');
     }
   },
 };

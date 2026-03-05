@@ -11,8 +11,8 @@ import React, {
 import { TabContainer } from './components/PageContainer';
 import { QueryProvider } from './components/providers/QueryProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
-import { ExpenseLanding } from './features/expenses/ExpenseLanding';
 import { OverviewLanding } from './features/overview/OverviewLanding';
+import { TransactionLanding } from './features/transactions/TransactionLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
 import { useLogoutListener } from './hooks/useLogoutListener';
 
@@ -36,8 +36,8 @@ const App: React.FC = () => {
       content: <OverviewLanding />,
     },
     {
-      labelKey: 'tabs.expense',
-      content: <ExpenseLanding />,
+      labelKey: 'tabs.transactions',
+      content: <TransactionLanding />,
     },
     {
       labelKey: 'tabs.budgets',

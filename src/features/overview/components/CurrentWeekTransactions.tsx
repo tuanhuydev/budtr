@@ -6,9 +6,9 @@ import { useMemo } from 'react';
 import { useStats } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseType } from '@/types/common';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
-export const CurrentWeekExpenses = () => {
+export const CurrentWeekTransactions = () => {
   const { t } = useBudtrTranslation();
   const { data: stats } = useStats();
 
@@ -47,7 +47,7 @@ export const CurrentWeekExpenses = () => {
     return (
       <Box sx={ContainerSx}>
         <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
-          {t('overview.currentWeekExpenses')}
+          {t('overview.currentWeekTransactions')}
         </Typography>
 
         <Box sx={EmptyStateSx}>
@@ -62,7 +62,7 @@ export const CurrentWeekExpenses = () => {
   return (
     <Box sx={ContainerSx}>
       <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
-        {t('overview.currentWeekExpenses')}
+        {t('overview.currentWeekTransactions')}
       </Typography>
 
       <Box sx={ChartContainerSx}>
@@ -84,7 +84,8 @@ export const CurrentWeekExpenses = () => {
               color: '#1976d2',
               valueFormatter: (value: number | null) =>
                 value
-                  ? formatExpenseAmount(value, ExpenseType.EXPENSE).displayText
+                  ? formatTransactionAmount(value, ExpenseType.EXPENSE)
+                      .displayText
                   : '',
             },
           ]}

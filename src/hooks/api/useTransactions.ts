@@ -1,19 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  expensesApi,
-  FetchExpensesParams,
-  CreateExpenseParams,
-  UpdateExpenseParams,
+  transactionsApi,
+  FetchTransactionsParams,
+  CreateTransactionParams,
+  UpdateTransactionParams,
 } from '../../services/api';
 import type { ApiClient } from '../../types/shell';
 import { useShellService } from '../useShellService';
 
 import { STATS_QUERY_KEY } from './useStats';
 
-export const EXPENSES_QUERY_KEY = 'expenses';
+export const TRANSACTIONS_QUERY_KEY = 'transactions';
 
-export const useExpenses = (params?: FetchExpensesParams) => {
+export const useTransactions = (params?: FetchTransactionsParams) => {
   const apiClient = useShellService<ApiClient>('apiClient');
 
   // Create a clean params object for query key stability
@@ -28,49 +28,49 @@ export const useExpenses = (params?: FetchExpensesParams) => {
     : undefined;
 
   return useQuery({
-    queryKey: [EXPENSES_QUERY_KEY, cleanParams],
-    queryFn: () => expensesApi.fetchExpenses(apiClient!, params),
+    queryKey: [TRANSACTIONS_QUERY_KEY, cleanParams],
+    queryFn: () => transactionsApi.fetchTransactions(apiClient!, params),
     enabled: !!apiClient,
   });
 };
 
-export const useCreateExpense = () => {
+export const useCreateTransaction = () => {
   const apiClient = useShellService<ApiClient>('apiClient');
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateExpenseParams) =>
-      expensesApi.createExpense(apiClient!, data),
+    mutationFn: (data: CreateTransactionParams) =>
+      transactionsApi.createTransaction(apiClient!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [EXPENSES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
     },
   });
 };
 
-export const useUpdateExpense = () => {
+export const useUpdateTransaction = () => {
   const apiClient = useShellService<ApiClient>('apiClient');
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: UpdateExpenseParams) =>
-      expensesApi.updateExpense(apiClient!, data),
+    mutationFn: (data: UpdateTransactionParams) =>
+      transactionsApi.updateTransaction(apiClient!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [EXPENSES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
     },
   });
 };
 
-export const useDeleteExpense = () => {
+export const useDeleteTransaction = () => {
   const apiClient = useShellService<ApiClient>('apiClient');
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: string | number) =>
-      expensesApi.deleteExpense(apiClient!, id),
+      transactionsApi.deleteTransaction(apiClient!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [EXPENSES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
     },
   });

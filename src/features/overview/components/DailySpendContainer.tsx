@@ -11,9 +11,9 @@ import { grey } from '@mui/material/colors';
 import { useState } from 'react';
 
 import { AmountInput } from '@/components/AmountInput';
-import { categoryOptions, expenseOptions } from '@/configs/constants';
-import { CreateExpenseDTO } from '@/features/expenses/dto/CreateExpenseDTO';
-import { useCreateExpense } from '@/hooks/api/useExpenses';
+import { categoryOptions, transactionOptions } from '@/configs/constants';
+import { CreateTransactionDTO } from '@/features/transactions/dto/CreateTransactionDTO';
+import { useCreateTransaction } from '@/hooks/api/useTransactions';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import {
   DropdownOption,
@@ -21,10 +21,10 @@ import {
   ExpenseCategory,
   ExpenseType,
 } from '@/types/common';
-import { Expense } from '@/types/expense';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { Transaction } from '@/types/transaction';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
-const DEFAULT_FORM_VALUES: CreateExpenseDTO = {
+const DEFAULT_FORM_VALUES: CreateTransactionDTO = {
   type: ExpenseType.EXPENSE,
   category: ExpenseCategory.FOOD,
   amount: 0,
@@ -34,22 +34,23 @@ const DEFAULT_FORM_VALUES: CreateExpenseDTO = {
 };
 
 interface DailySpendContainerProps {
-  expenses: Expense[];
+  transactions: Transaction[];
   budgets: any[];
 }
 
 export const DailySpendContainer = ({
-  expenses,
+  transactions,
   budgets,
 }: DailySpendContainerProps) => {
   const { t } = useBudtrTranslation();
-  const createExpenseMutation = useCreateExpense();
+  const createTransactionMutation = useCreateTransaction();
 
   const [formData, setFormData] =
-    useState<CreateExpenseDTO>(DEFAULT_FORM_VALUES);
+    useState<CreateTransactionDTO>(DEFAULT_FORM_VALUES);
 
   const handleFieldChange =
-    (field: keyof CreateExpenseDTO) => (event: SelectChangeEvent<unknown>) => {
+    (field: keyof CreateTransactionDTO) =>
+    (event: SelectChangeEvent<unknown>) => {
       setFormData(prev => ({ ...prev, [field]: event.target.value }));
     };
 
@@ -59,20 +60,20 @@ export const DailySpendContainer = ({
 
   const handleSave = async () => {
     try {
-      await createExpenseMutation.mutateAsync(formData);
+      await createTransactionMutation.mutateAsync(formData);
       setFormData(DEFAULT_FORM_VALUES);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('[DailySpendContainer] Failed to save expense', error);
+      console.error('[DailySpendContainer] Failed to save transaction', error);
     }
   };
   const ExpenseBehaviorOptions: Array<DropdownOption<ExpenseBehavior>> = [
     {
-      label: t(`expenses.${ExpenseBehavior.FIXED}`),
+      label: t(`transactions.${ExpenseBehavior.FIXED}`),
       value: ExpenseBehavior.FIXED,
     },
     {
-      label: t(`expenses.${ExpenseBehavior.VARIABLE}`),
+      label: t(`transactions.${ExpenseBehavior.VARIABLE}`),
       value: ExpenseBehavior.VARIABLE,
     },
   ];
@@ -89,9 +90,9 @@ export const DailySpendContainer = ({
             value={formData.type}
             onChange={handleFieldChange('type')}
           >
-            {expenseOptions.map(({ value }) => (
+            {transactionOptions.map(({ value }) => (
               <MenuItem value={value} key={value}>
-                {t(`expenses.${value}`)}
+                {t(`transactions.${value}`)}
               </MenuItem>
             ))}
           </Select>
@@ -148,46 +149,48 @@ export const DailySpendContainer = ({
           />
           <Button
             onClick={handleSave}
-            disabled={createExpenseMutation.isPending || formData.amount <= 0}
+            disabled={
+              createTransactionMutation.isPending || formData.amount <= 0
+            }
           >
             {t('common.save')}
           </Button>
         </Box>
       </Box>
-      <Box sx={ExpensesContainerSx}>
+      <Box sx={TransactionsContainerSx}>
         <Typography component={'h4'} sx={{ mb: 1, color: grey[600] }}>
-          {t('overview.expenseList')}
+          {t('overview.transactionList')}
         </Typography>
-        {expenses.length === 0 ? (
+        {transactions.length === 0 ? (
           <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noExpenses')}
+            {t('overview.noTransactions')}
           </Typography>
         ) : (
-          <Box sx={ExpenseListSx}>
-            {expenses.map((expense, index) => (
-              <Box key={expense.id || index} sx={ExpenseItemSx}>
-                <Box sx={ExpenseItemContentSx}>
+          <Box sx={TransactionListSx}>
+            {transactions.map((transaction, index) => (
+              <Box key={transaction.id || index} sx={TransactionItemSx}>
+                <Box sx={TransactionItemContentSx}>
                   <Typography variant='body2' sx={{ fontWeight: 500 }}>
-                    {expense.category
-                      ? t(`categories.${expense.category}`)
+                    {transaction.category
+                      ? t(`categories.${transaction.category}`)
                       : t('categories.OTHER')}
                   </Typography>
                   <Typography
                     variant='body2'
                     sx={{
-                      color: formatExpenseAmount(
-                        expense.amount || 0,
-                        expense.type,
-                        expense.currency || 'VND'
+                      color: formatTransactionAmount(
+                        transaction.amount || 0,
+                        transaction.type,
+                        transaction.currency || 'VND'
                       ).color,
                       fontWeight: 600,
                     }}
                   >
                     {
-                      formatExpenseAmount(
-                        expense.amount || 0,
-                        expense.type,
-                        expense.currency || 'VND'
+                      formatTransactionAmount(
+                        transaction.amount || 0,
+                        transaction.type,
+                        transaction.currency || 'VND'
                       ).displayText
                     }
                   </Typography>
@@ -212,7 +215,7 @@ const ContainerSx: SxProps = {
   flexDirection: 'column',
 };
 
-const ExpenseListSx: SxProps = {
+const TransactionListSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
   gap: 1,
@@ -236,7 +239,7 @@ const ExpenseListSx: SxProps = {
   },
 };
 
-const ExpensesContainerSx: SxProps = {
+const TransactionsContainerSx: SxProps = {
   flex: 1,
   minHeight: 0,
   mt: 2,
@@ -244,13 +247,13 @@ const ExpensesContainerSx: SxProps = {
   flexDirection: 'column',
 };
 
-const ExpenseItemSx: SxProps = {
+const TransactionItemSx: SxProps = {
   p: 1.5,
   border: `1px solid ${grey[200]}`,
   borderRadius: 1,
 };
 
-const ExpenseItemContentSx: SxProps = {
+const TransactionItemContentSx: SxProps = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',

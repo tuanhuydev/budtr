@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { statsApi } from '../../services/api';
-import { Expense } from '../../types/expense';
 import { ApiClient } from '../../types/shell';
+import { Transaction } from '../../types/transaction';
 import { useShellService } from '../useShellService';
 
 export const STATS_QUERY_KEY = 'stats';
@@ -12,13 +12,13 @@ export type WeeklyComparisonItem = {
   [key: string]: string | number;
 };
 
-export type ExpenseByCategory = {
+export type TransactionByCategory = {
   key: string;
   amount: number;
   count: number;
 };
 
-export type ExpenseByDay = {
+export type TransactionByDay = {
   day: string;
   amount: number;
   count: number;
@@ -30,9 +30,9 @@ export type Stats = {
   totalExpenses: number;
   totalIncome: number;
   weeklyComparison?: WeeklyComparisonItem[];
-  weeklyExpenses?: ExpenseByCategory[];
-  currentWeek?: ExpenseByDay[];
-  topExpenses?: Expense[];
+  weeklyTransactions?: TransactionByCategory[];
+  currentWeek?: TransactionByDay[];
+  topTransactions?: Transaction[];
 };
 
 export const useStats = () => {

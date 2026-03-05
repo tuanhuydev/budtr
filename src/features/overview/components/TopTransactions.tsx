@@ -5,34 +5,37 @@ import { useMemo } from 'react';
 import { CATEGORY_COLORS } from '@/configs/constants';
 import { useStats } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
-export const TopExpenses = () => {
+export const TopTransactions = () => {
   const { t } = useBudtrTranslation();
   const { data: stats } = useStats();
 
-  const topExpenses = stats?.topExpenses || [];
+  const topTransactions = stats?.topTransactions || [];
 
-  const formattedExpenses = useMemo(() => {
-    return topExpenses.map(expense => ({
-      ...expense,
-      formattedAmount: formatExpenseAmount(expense.amount, expense.type)
-        .displayText,
-      categoryLabel: t(`categories.${expense.category}`),
-      categoryColor: CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.OTHER,
+  const formattedTransactions = useMemo(() => {
+    return topTransactions.map(transaction => ({
+      ...transaction,
+      formattedAmount: formatTransactionAmount(
+        transaction.amount,
+        transaction.type
+      ).displayText,
+      categoryLabel: t(`categories.${transaction.category}`),
+      categoryColor:
+        CATEGORY_COLORS[transaction.category] || CATEGORY_COLORS.OTHER,
     }));
-  }, [topExpenses, t]);
+  }, [topTransactions, t]);
 
-  if (!topExpenses || topExpenses.length === 0) {
+  if (!topTransactions || topTransactions.length === 0) {
     return (
       <Box sx={ContainerSx}>
         <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
-          {t('overview.topExpenses')}
+          {t('overview.topTransactions')}
         </Typography>
 
         <Box sx={EmptyStateSx}>
           <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noExpenses')}
+            {t('overview.noTransactions')}
           </Typography>
         </Box>
       </Box>
@@ -42,17 +45,17 @@ export const TopExpenses = () => {
   return (
     <Box sx={ContainerSx}>
       <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
-        {t('overview.topExpenses')}
+        {t('overview.topTransactions')}
       </Typography>
 
       <List sx={ListSx}>
-        {formattedExpenses.map((expense, index) => (
+        {formattedTransactions.map((transaction, index) => (
           <ListItem
-            key={expense.id}
+            key={transaction.id}
             sx={{
               ...ListItemSx,
               borderBottom:
-                index < formattedExpenses.length - 1
+                index < formattedTransactions.length - 1
                   ? `1px solid ${grey[200]}`
                   : 'none',
             }}
@@ -63,13 +66,13 @@ export const TopExpenses = () => {
                   variant='body2'
                   sx={{ fontWeight: 500, color: grey[800] }}
                 >
-                  {expense.description || t('expenses.noDescription')}
+                  {transaction.description || t('transactions.noDescription')}
                 </Typography>
                 <Chip
-                  label={expense.categoryLabel}
+                  label={transaction.categoryLabel}
                   size='small'
                   sx={{
-                    backgroundColor: expense.categoryColor,
+                    backgroundColor: transaction.categoryColor,
                     color: 'white',
                     fontSize: '0.7rem',
                     height: '20px',
@@ -80,7 +83,7 @@ export const TopExpenses = () => {
                 variant='body1'
                 sx={{ fontWeight: 'bold', color: grey[900], flexShrink: 0 }}
               >
-                {expense.formattedAmount}
+                {transaction.formattedAmount}
               </Typography>
             </Box>
           </ListItem>
