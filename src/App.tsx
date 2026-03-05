@@ -14,6 +14,7 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 import { ExpenseLanding } from './features/expenses/ExpenseLanding';
 import { OverviewLanding } from './features/overview/OverviewLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
+import { useLogoutListener } from './hooks/useLogoutListener';
 
 const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
   return <Box sx={TabWrapperSx}>{children}</Box>;
@@ -22,6 +23,9 @@ const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
 const App: React.FC = () => {
   const { t } = useBudtrTranslation();
   const [activeTab, setActiveTab] = useState<number>(0);
+
+  // Monitor auth state and clear cache on logout
+  useLogoutListener();
   const handleChange = (e: SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
