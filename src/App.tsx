@@ -11,8 +11,8 @@ import React, {
 import { TabContainer } from './components/PageContainer';
 import { QueryProvider } from './components/providers/QueryProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
-import { ExpenseLanding } from './features/expenses/ExpenseLanding';
 import { OverviewLanding } from './features/overview/OverviewLanding';
+import { TransactionLanding } from './features/transactions/TransactionLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
 
 const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
@@ -22,6 +22,7 @@ const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
 const App: React.FC = () => {
   const { t } = useBudtrTranslation();
   const [activeTab, setActiveTab] = useState<number>(0);
+
   const handleChange = (e: SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
@@ -32,8 +33,8 @@ const App: React.FC = () => {
       content: <OverviewLanding />,
     },
     {
-      labelKey: 'tabs.expense',
-      content: <ExpenseLanding />,
+      labelKey: 'tabs.transactions',
+      content: <TransactionLanding />,
     },
     {
       labelKey: 'tabs.budgets',

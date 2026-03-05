@@ -15,9 +15,9 @@ import {
 import { useMemo, useState } from 'react';
 
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
-import { useExpenses } from '@/hooks/api/useExpenses';
-import { ExpenseType } from '@/types/expense';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { useTransactions } from '@/hooks/api/useTransactions';
+import { ExpenseType } from '@/types/transaction';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
 import { CATEGORY_COLORS } from '../../../configs/constants';
 import { useBudtrTranslation } from '../../../hooks/useI18n';
@@ -76,14 +76,14 @@ export const MoneyMix = () => {
 
   const { start, end } = getDateRange(selectedPeriod);
 
-  const { data: expensesData } = useExpenses({
+  const { data: transactionsData } = useTransactions({
     startDate: start,
     endDate: end,
   });
 
-  const expenses =
-    expensesData?.expenses.filter(
-      expense => expense.type === ExpenseType.EXPENSE
+  const transactions =
+    transactionsData?.transactions.filter(
+      transaction => transaction.type === ExpenseType.EXPENSE
     ) ?? [];
 
   const titleKey = useMemo(() => {
@@ -104,14 +104,14 @@ export const MoneyMix = () => {
   }, [selectedPeriod]);
 
   const chartData = useMemo(() => {
-    // Group expenses by category and sum amounts
-    const categoryTotals = expenses.reduce(
-      (acc, expense) => {
-        const category = expense.category;
+    // Group transactions by category and sum amounts
+    const categoryTotals = transactions.reduce(
+      (acc, transaction) => {
+        const category = transaction.category;
         if (!acc[category]) {
           acc[category] = 0;
         }
-        acc[category] += expense.amount;
+        acc[category] += transaction.amount;
         return acc;
       },
       {} as Record<string, number>
@@ -120,12 +120,12 @@ export const MoneyMix = () => {
     // Convert to chart data format
     return Object.entries(categoryTotals).map(([category, value]) => ({
       label: category ? t(`categories.${category}`) : t('categories.OTHER'),
-      formattedValue: formatExpenseAmount(value, ExpenseType.EXPENSE)
+      formattedValue: formatTransactionAmount(value, ExpenseType.EXPENSE)
         .displayText,
       value,
       color: CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER,
     }));
-  }, [expenses, t]);
+  }, [transactions, t]);
 
   const handlePeriodChange = (period: TimePeriod) => {
     if (period === 'custom') {
@@ -154,7 +154,7 @@ export const MoneyMix = () => {
   );
 
   const formattedTotal = useMemo(
-    () => formatExpenseAmount(total, ExpenseType.EXPENSE).displayText,
+    () => formatTransactionAmount(total, ExpenseType.EXPENSE).displayText,
     [total]
   );
 
@@ -208,7 +208,7 @@ export const MoneyMix = () => {
 
         <Box sx={EmptyStateSx}>
           <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noExpenses')}
+            {t('overview.noTransactions')}
           </Typography>
         </Box>
       </Box>

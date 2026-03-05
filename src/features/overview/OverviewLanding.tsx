@@ -2,28 +2,29 @@ import { Box, SxProps, CircularProgress } from '@mui/material';
 import { startOfDay, endOfDay } from 'date-fns';
 
 import { useBudgets } from '../../hooks/api/useBudgets';
-import { useExpenses } from '../../hooks/api/useExpenses';
+import { useTransactions } from '../../hooks/api/useTransactions';
 
-import { CurrentWeekExpenses } from './components/CurrentWeekExpenses';
+import { CurrentWeekTransactions } from './components/CurrentWeekTransactions';
 import { DailySpendContainer } from './components/DailySpendContainer';
 import { MoneyMix } from './components/MoneyMix';
-import { TopExpenses } from './components/TopExpenses';
+import { TopTransactions } from './components/TopTransactions';
 import { WeeklyComparison } from './components/WeeklyComparison';
 
 export const OverviewLanding = () => {
   const today = new Date();
 
-  // Fetch daily expenses for DailySpendContainer
-  const { data: dailyExpenses, isLoading: dailyExpensesLoading } = useExpenses({
-    startDate: startOfDay(today),
-    endDate: endOfDay(today),
-  });
+  // Fetch daily transactions for DailySpendContainer
+  const { data: dailyTransactions, isLoading: dailyTransactionsLoading } =
+    useTransactions({
+      startDate: startOfDay(today),
+      endDate: endOfDay(today),
+    });
 
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
 
-  const expenses = dailyExpenses?.expenses ?? [];
+  const transactions = dailyTransactions?.expenses ?? [];
 
-  if (dailyExpensesLoading || budgetsLoading) {
+  if (dailyTransactionsLoading || budgetsLoading) {
     return (
       <Box sx={LoadingContainerSx}>
         <CircularProgress />
@@ -34,13 +35,13 @@ export const OverviewLanding = () => {
   return (
     <Box sx={RootContainerSx}>
       <Box sx={LeftColumnSx}>
-        <DailySpendContainer expenses={expenses} budgets={budgets} />
+        <DailySpendContainer transactions={transactions} budgets={budgets} />
       </Box>
       <Box sx={RightColumnSx}>
         <MoneyMix />
         <WeeklyComparison />
-        <CurrentWeekExpenses />
-        <TopExpenses />
+        <CurrentWeekTransactions />
+        <TopTransactions />
       </Box>
     </Box>
   );

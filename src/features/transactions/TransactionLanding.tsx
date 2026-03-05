@@ -20,18 +20,18 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
 import { useBudgets } from '@/hooks/api/useBudgets';
 import {
-  useExpenses,
-  useCreateExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from '@/hooks/api/useExpenses';
+  useTransactions,
+  useCreateTransaction,
+  useUpdateTransaction,
+  useDeleteTransaction,
+} from '@/hooks/api/useTransactions';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { Expense } from '@/types/expense';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { Transaction } from '@/types/transaction';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
-import { ExpenseForm } from './components/ExpenseForm';
+import { TransactionForm } from './components/TransactionForm';
 
-export const ExpenseLanding = () => {
+export const TransactionLanding = () => {
   // region Hooks
   const { t } = useBudtrTranslation();
 
@@ -50,35 +50,37 @@ export const ExpenseLanding = () => {
   });
 
   // React Query hooks
-  const { data: expensesData, isLoading: expensesLoading } = useExpenses({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-    page: paginationModel.page,
-    pageSize: paginationModel.pageSize,
-  });
+  const { data: transactionsData, isLoading: transactionsLoading } =
+    useTransactions({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      page: paginationModel.page,
+      pageSize: paginationModel.pageSize,
+    });
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
-  const createExpenseMutation = useCreateExpense();
-  const updateExpenseMutation = useUpdateExpense();
-  const deleteExpenseMutation = useDeleteExpense();
+  const createTransactionMutation = useCreateTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
+  const deleteTransactionMutation = useDeleteTransaction();
 
-  const expenses = expensesData?.expenses ?? [];
+  const transactions = transactionsData?.transactions ?? [];
 
   // Maintain stable rowCount during loading to prevent undefined issues
-  const rowCountRef = useRef(expensesData?.total || 0);
+  const rowCountRef = useRef(transactionsData?.total || 0);
   const rowCount = useMemo(() => {
-    if (expensesData?.total !== undefined) {
-      rowCountRef.current = expensesData.total;
+    if (transactionsData?.total !== undefined) {
+      rowCountRef.current = transactionsData.total;
     }
     return rowCountRef.current;
-  }, [expensesData?.total]);
+  }, [transactionsData?.total]);
 
-  // Reset to first page when date range changes or when expenses update
+  // Reset to first page when date range changes or when transactions update
   useEffect(() => {
     setPaginationModel(prev => ({ ...prev, page: 0 }));
   }, [dateRange.startDate, dateRange.endDate]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -89,10 +91,10 @@ export const ExpenseLanding = () => {
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    expense: Expense
+    transaction: Transaction
   ) => {
     setAnchorEl(event.currentTarget);
-    setSelectedExpense(expense);
+    setSelectedTransaction(transaction);
   };
 
   const handleMenuClose = () => {
@@ -100,7 +102,7 @@ export const ExpenseLanding = () => {
   };
 
   const handleEditClick = () => {
-    if (selectedExpense) {
+    if (selectedTransaction) {
       setModalOpen(true);
     }
     handleMenuClose();
@@ -112,20 +114,20 @@ export const ExpenseLanding = () => {
   };
 
   const handleModalOpen = () => {
-    setSelectedExpense(null);
+    setSelectedTransaction(null);
     setModalOpen(true);
   };
 
   const handleModalClose = () => {
     setModalOpen(false);
-    setSelectedExpense(null);
+    setSelectedTransaction(null);
   };
 
-  const handleSave = async (data: Partial<Expense>) => {
-    const isEdit = !!selectedExpense;
+  const handleSave = async (data: Partial<Transaction>) => {
+    const isEdit = !!selectedTransaction;
 
     try {
-      const expenseData = {
+      const transactionData = {
         type: data.type || '',
         category: data.category || '',
         amount: data.amount || 0,
@@ -137,18 +139,18 @@ export const ExpenseLanding = () => {
       };
 
       if (isEdit) {
-        await updateExpenseMutation.mutateAsync({
-          id: selectedExpense.id,
-          ...expenseData,
+        await updateTransactionMutation.mutateAsync({
+          id: selectedTransaction.id,
+          ...transactionData,
         });
       } else {
-        await createExpenseMutation.mutateAsync(expenseData);
+        await createTransactionMutation.mutateAsync(transactionData);
       }
 
       setSnackbar({
         open: true,
         message: t(
-          isEdit ? 'expenses.updateSuccess' : 'expenses.createSuccess'
+          isEdit ? 'transactions.updateSuccess' : 'transactions.createSuccess'
         ),
         severity: 'success',
       });
@@ -156,31 +158,33 @@ export const ExpenseLanding = () => {
     } catch {
       setSnackbar({
         open: true,
-        message: t(isEdit ? 'expenses.updateFailed' : 'expenses.createFailed'),
+        message: t(
+          isEdit ? 'transactions.updateFailed' : 'transactions.createFailed'
+        ),
         severity: 'error',
       });
     }
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedExpense) return;
+    if (!selectedTransaction) return;
 
     try {
-      await deleteExpenseMutation.mutateAsync(selectedExpense.id);
+      await deleteTransactionMutation.mutateAsync(selectedTransaction.id);
       setSnackbar({
         open: true,
-        message: t('expenses.deleteSuccess'),
+        message: t('transactions.deleteSuccess'),
         severity: 'success',
       });
     } catch {
       setSnackbar({
         open: true,
-        message: t('expenses.deleteFailed'),
+        message: t('transactions.deleteFailed'),
         severity: 'error',
       });
     } finally {
       setDeleteDialogOpen(false);
-      setSelectedExpense(null);
+      setSelectedTransaction(null);
     }
   };
 
@@ -193,13 +197,13 @@ export const ExpenseLanding = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: t('expenses.id'), width: 90 },
+    { field: 'id', headerName: t('transactions.id'), width: 90 },
     {
       field: 'amount',
-      headerName: t('expenses.amount'),
+      headerName: t('transactions.amount'),
       width: 180,
       renderCell: params => {
-        const { displayText, color } = formatExpenseAmount(
+        const { displayText, color } = formatTransactionAmount(
           params.row.amount,
           params.row.type,
           params.row.currency
@@ -213,7 +217,7 @@ export const ExpenseLanding = () => {
     },
     {
       field: 'category',
-      headerName: t('expenses.category'),
+      headerName: t('transactions.category'),
       width: 150,
       renderCell: params =>
         params.row?.category
@@ -222,34 +226,34 @@ export const ExpenseLanding = () => {
     },
     {
       field: 'behavior',
-      headerName: t('expenses.behavior'),
+      headerName: t('transactions.behavior'),
       width: 100,
       renderCell: params =>
         params.row?.behavior
-          ? t(`expenses.${params.row.behavior}`)
+          ? t(`transactions.${params.row.behavior}`)
           : t(`categories.OTHER`),
     },
 
     {
       field: 'createdAt',
-      headerName: t('expenses.createdAt'),
+      headerName: t('transactions.createdAt'),
       width: 180,
       valueFormatter: value => new Date(value).toLocaleDateString(),
     },
     {
       field: 'description',
-      headerName: t('expenses.description'),
+      headerName: t('transactions.description'),
       flex: 1,
       minWidth: 200,
       renderCell: params => (
         <Typography variant='body2' sx={descriptionCellSx}>
-          {params.row.description || t('expenses.noDescription')}
+          {params.row.description || t('transactions.noDescription')}
         </Typography>
       ),
     },
     {
       field: 'actions',
-      headerName: t('expenses.actions'),
+      headerName: t('transactions.actions'),
       width: 100,
       sortable: false,
       renderCell: params => (
@@ -260,7 +264,7 @@ export const ExpenseLanding = () => {
     },
   ];
 
-  if (expensesLoading || budgetsLoading) {
+  if (transactionsLoading || budgetsLoading) {
     return (
       <Box sx={LoadingContainerSx}>
         <CircularProgress />
@@ -292,14 +296,14 @@ export const ExpenseLanding = () => {
 
       <Box sx={{ flex: 1, minHeight: 0 }}>
         <DataGrid
-          rows={expenses}
+          rows={transactions}
           columns={columns}
           rowCount={rowCount}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[5, 10, 25, 50]}
           paginationMode='server'
-          loading={expensesLoading}
+          loading={transactionsLoading}
           disableRowSelectionOnClick
           disableColumnSorting
           disableColumnMenu
@@ -323,7 +327,7 @@ export const ExpenseLanding = () => {
         </MenuItem>
       </Menu>
 
-      {/* Expense Modal (Create/Edit) */}
+      {/* Transaction Modal (Create/Edit) */}
       <Dialog
         open={modalOpen}
         onClose={handleModalClose}
@@ -331,13 +335,13 @@ export const ExpenseLanding = () => {
         fullWidth
       >
         <DialogTitle>
-          {selectedExpense
-            ? t('expenses.editExpense')
-            : t('expenses.createExpense')}
+          {selectedTransaction
+            ? t('transactions.editTransaction')
+            : t('transactions.createTransaction')}
         </DialogTitle>
         <DialogContent>
-          <ExpenseForm
-            expense={selectedExpense || undefined}
+          <TransactionForm
+            transaction={selectedTransaction || undefined}
             budgets={budgets}
             onSave={handleSave}
             onCancel={handleModalClose}
@@ -347,9 +351,9 @@ export const ExpenseLanding = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle>{t('expenses.confirmDelete')}</DialogTitle>
+        <DialogTitle>{t('transactions.confirmDelete')}</DialogTitle>
         <DialogContent>
-          <Typography>{t('expenses.deleteConfirmMessage')}</Typography>
+          <Typography>{t('transactions.deleteConfirmMessage')}</Typography>
         </DialogContent>
         <DialogActions>
           <Button variant='text' color='info' onClick={handleDeleteCancel}>

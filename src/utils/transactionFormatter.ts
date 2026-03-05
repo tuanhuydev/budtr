@@ -6,7 +6,7 @@ export interface FormattedAmount {
   sign: '+' | '-';
 }
 
-export const formatExpenseAmount = (
+export const formatTransactionAmount = (
   amount: number,
   type: ExpenseType,
   currency?: string

@@ -2,7 +2,7 @@ import { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
 export { ExpenseBehavior, ExpenseCategory, ExpenseType } from './common';
 
-export type Expense = {
+export type Transaction = {
   id: string;
   userId: string;
   amount: number;

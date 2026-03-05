@@ -7,7 +7,7 @@ import { CATEGORY_COLORS } from '@/configs/constants';
 import { useStats, WeeklyComparisonItem } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseType } from '@/types/common';
-import { formatExpenseAmount } from '@/utils/expenseFormatter';
+import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
 export const WeeklyComparison = () => {
   const { t } = useBudtrTranslation();
@@ -59,7 +59,7 @@ export const WeeklyComparison = () => {
       color: CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER,
       valueFormatter: (value: number | null) =>
         value
-          ? formatExpenseAmount(value, ExpenseType.EXPENSE).displayText
+          ? formatTransactionAmount(value, ExpenseType.EXPENSE).displayText
           : '',
     }));
 

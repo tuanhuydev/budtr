@@ -13,61 +13,65 @@ import React from 'react';
 
 import { AmountInput } from '@/components/AmountInput';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { Expense, ExpenseCategory, ExpenseType } from '@/types/expense';
+import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
 import { DropdownOption, ExpenseBehavior } from '../../../types/common';
 
-interface ExpenseFormProps {
-  expense?: Partial<Expense>;
+interface TransactionFormProps {
+  transaction?: Partial<Transaction>;
   budgets: any[];
-  onSave: (data: Partial<Expense>) => void;
+  onSave: (data: Partial<Transaction>) => void;
   onCancel: () => void;
 }
 
-export const ExpenseForm = ({
-  expense,
+export const TransactionForm = ({
+  transaction,
   budgets,
   onSave,
   onCancel,
-}: ExpenseFormProps) => {
+}: TransactionFormProps) => {
   const { t } = useBudtrTranslation();
 
-  const [formData, setFormData] = React.useState<Partial<Expense>>(() => {
+  const [formData, setFormData] = React.useState<Partial<Transaction>>(() => {
     const today = new Date().toISOString().split('T')[0];
     return {
-      type: expense?.type || ExpenseType.EXPENSE,
-      category: expense?.category || ExpenseCategory.FOOD,
-      behavior: expense?.behavior || ExpenseBehavior.FIXED,
-      amount: expense?.amount || 0,
-      currency: expense?.currency || 'VND',
-      source: expense?.source || '',
-      description: expense?.description || '',
-      createdAt: expense?.createdAt ? expense.createdAt.split('T')[0] : today,
+      type: transaction?.type || ExpenseType.EXPENSE,
+      category: transaction?.category || ExpenseCategory.FOOD,
+      behavior: transaction?.behavior || ExpenseBehavior.FIXED,
+      amount: transaction?.amount || 0,
+      currency: transaction?.currency || 'VND',
+      source: transaction?.source || '',
+      description: transaction?.description || '',
+      createdAt: transaction?.createdAt
+        ? transaction.createdAt.split('T')[0]
+        : today,
     };
   });
 
-  // Sync form data when expense prop changes
+  // Sync form data when transaction prop changes
   React.useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setFormData({
-      type: expense?.type || ExpenseType.EXPENSE,
-      category: expense?.category || ExpenseCategory.FOOD,
-      behavior: expense?.behavior || ExpenseBehavior.FIXED,
-      amount: expense?.amount || 0,
-      currency: expense?.currency || 'VND',
-      source: expense?.source || '',
-      description: expense?.description || '',
-      createdAt: expense?.createdAt ? expense.createdAt.split('T')[0] : today,
+      type: transaction?.type || ExpenseType.EXPENSE,
+      category: transaction?.category || ExpenseCategory.FOOD,
+      behavior: transaction?.behavior || ExpenseBehavior.FIXED,
+      amount: transaction?.amount || 0,
+      currency: transaction?.currency || 'VND',
+      source: transaction?.source || '',
+      description: transaction?.description || '',
+      createdAt: transaction?.createdAt
+        ? transaction.createdAt.split('T')[0]
+        : today,
     });
-  }, [expense]);
+  }, [transaction]);
 
   const handleFieldChange =
-    (field: keyof Expense) =>
-      (
-        event: SelectChangeEvent<unknown> | React.ChangeEvent<HTMLInputElement>
-      ) => {
-        setFormData(prev => ({ ...prev, [field]: event.target.value }));
-      };
+    (field: keyof Transaction) =>
+    (
+      event: SelectChangeEvent<unknown> | React.ChangeEvent<HTMLInputElement>
+    ) => {
+      setFormData(prev => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, amount: Number(event.target.value) }));
@@ -89,7 +93,7 @@ export const ExpenseForm = ({
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Box sx={{ width: 150 }}>
           <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('expenses.type')}
+            {t('transactions.type')}
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -98,11 +102,11 @@ export const ExpenseForm = ({
               displayEmpty
             >
               <MenuItem value='' disabled>
-                {t('expenses.type')}
+                {t('transactions.type')}
               </MenuItem>
               {Object.values(ExpenseType).map(type => (
                 <MenuItem key={type} value={type}>
-                  {t(`expenses.${type}`)}
+                  {t(`transactions.${type}`)}
                 </MenuItem>
               ))}
             </Select>
@@ -110,7 +114,7 @@ export const ExpenseForm = ({
         </Box>
         <Box sx={{ flex: 1 }}>
           <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('expenses.amount')}
+            {t('transactions.amount')}
           </Typography>
           <AmountInput
             value={formData.amount || 0}
@@ -121,7 +125,7 @@ export const ExpenseForm = ({
       </Box>
       <Box>
         <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('expenses.category')}
+          {t('transactions.category')}
         </Typography>
         <FormControl fullWidth>
           <Select
@@ -130,7 +134,7 @@ export const ExpenseForm = ({
             displayEmpty
           >
             <MenuItem value='' disabled>
-              {t('expenses.category')}
+              {t('transactions.category')}
             </MenuItem>
             {Object.values(ExpenseCategory).map(category => (
               <MenuItem key={category} value={category}>
@@ -143,7 +147,7 @@ export const ExpenseForm = ({
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Box sx={{ flex: 1 }}>
           <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('expenses.behavior')}
+            {t('transactions.behavior')}
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -152,7 +156,7 @@ export const ExpenseForm = ({
             >
               {Object.values(ExpenseBehavior).map(behavior => (
                 <MenuItem key={behavior} value={behavior}>
-                  {t(`expenses.${behavior}`)}
+                  {t(`transactions.${behavior}`)}
                 </MenuItem>
               ))}
             </Select>
@@ -160,7 +164,7 @@ export const ExpenseForm = ({
         </Box>
         <Box sx={{ flex: 1 }}>
           <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('expenses.source')}
+            {t('transactions.source')}
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -172,7 +176,7 @@ export const ExpenseForm = ({
               <MenuItem value=''>
                 {budgets?.length <= 0
                   ? t('overview.noBudgetsAvailable')
-                  : t('expenses.source')}
+                  : t('transactions.source')}
               </MenuItem>
               {budgets.map(({ label, value }: DropdownOption<any>) => (
                 <MenuItem value={value} key={value}>
@@ -185,7 +189,7 @@ export const ExpenseForm = ({
       </Box>
       <Box>
         <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('expenses.date')}
+          {t('transactions.date')}
         </Typography>
         <TextField
           fullWidth
@@ -203,13 +207,13 @@ export const ExpenseForm = ({
       </Box>
       <Box>
         <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('expenses.description')}
+          {t('transactions.description')}
         </Typography>
         <TextField
           fullWidth
           multiline
           rows={3}
-          placeholder={t('expenses.description')}
+          placeholder={t('transactions.description')}
           value={formData.description || ''}
           onChange={e =>
             setFormData(prev => ({ ...prev, description: e.target.value }))

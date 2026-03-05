@@ -1,6 +1,6 @@
 import { ExpenseBehavior, ExpenseCategory, ExpenseType } from '@/types/common';
 
-export type CreateExpenseDTO = {
+export type CreateTransactionDTO = {
   amount: number;
   currency: string;
   source: string;
