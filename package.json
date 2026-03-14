@@ -21,6 +21,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@mui/x-charts": "^8.24.0",
@@ -31,7 +32,9 @@
     "i18next": "^25.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-i18next": "^15.7.3"
+    "react-hook-form": "^7.71.2",
+    "react-i18next": "^15.7.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

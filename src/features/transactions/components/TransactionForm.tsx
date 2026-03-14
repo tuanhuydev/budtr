@@ -1,25 +1,50 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  SxProps,
-  TextField,
-  Typography,
-} from '@mui/material';
-import React from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Box, Button, MenuItem, SxProps } from '@mui/material';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import { AmountInput } from '@/components/AmountInput';
+import { FormAmountInput } from '@/components/form/FormAmountInput';
+import { FormSelect } from '@/components/form/FormSelect';
+import { FormTextField } from '@/components/form/FormTextField';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import { ExpenseBehavior } from '@/types/common';
 import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
-import { DropdownOption, ExpenseBehavior } from '../../../types/common';
+const buildSchema = (msgs: { amountRequired: string }) =>
+  z.object({
+    type: z.nativeEnum(ExpenseType),
+    amount: z
+      .string()
+      .refine(
+        v => !Number.isNaN(Number(v)) && Number(v) > 0,
+        msgs.amountRequired
+      ),
+    category: z.nativeEnum(ExpenseCategory),
+    behavior: z.nativeEnum(ExpenseBehavior),
+    source: z.string(),
+    createdAt: z.string().min(1),
+    description: z.string(),
+  });
+
+type TransactionFormValues = z.infer<ReturnType<typeof buildSchema>>;
+
+const getDefaultValues = (tx?: Partial<Transaction>): TransactionFormValues => {
+  const today = new Date().toISOString().split('T')[0];
+  return {
+    type: tx?.type ?? ExpenseType.EXPENSE,
+    amount: tx?.amount ? String(tx.amount) : '',
+    category: tx?.category ?? ExpenseCategory.FOOD,
+    behavior: tx?.behavior ?? ExpenseBehavior.FIXED,
+    source: tx?.source ?? '',
+    description: tx?.description ?? '',
+    createdAt: tx?.createdAt ? tx.createdAt.split('T')[0] : today,
+  };
+};
 
 interface TransactionFormProps {
   transaction?: Partial<Transaction>;
-  budgets: any[];
+  budgets: unknown[];
   onSave: (data: Partial<Transaction>) => void;
   onCancel: () => void;
 }
@@ -32,204 +57,134 @@ export const TransactionForm = ({
 }: TransactionFormProps) => {
   const { t } = useBudtrTranslation();
 
-  const [formData, setFormData] = React.useState<Partial<Transaction>>(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return {
-      type: transaction?.type || ExpenseType.EXPENSE,
-      category: transaction?.category || ExpenseCategory.FOOD,
-      behavior: transaction?.behavior || ExpenseBehavior.FIXED,
-      amount: transaction?.amount || 0,
-      currency: transaction?.currency || 'VND',
-      source: transaction?.source || '',
-      description: transaction?.description || '',
-      createdAt: transaction?.createdAt
-        ? transaction.createdAt.split('T')[0]
-        : today,
-    };
+  const schema = useMemo(
+    () => buildSchema({ amountRequired: t('transactions.amountRequired') }),
+    [t]
+  );
+
+  const { control, handleSubmit, reset } = useForm<TransactionFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: getDefaultValues(transaction),
   });
 
-  // Sync form data when transaction prop changes
-  React.useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setFormData({
-      type: transaction?.type || ExpenseType.EXPENSE,
-      category: transaction?.category || ExpenseCategory.FOOD,
-      behavior: transaction?.behavior || ExpenseBehavior.FIXED,
-      amount: transaction?.amount || 0,
-      currency: transaction?.currency || 'VND',
-      source: transaction?.source || '',
-      description: transaction?.description || '',
-      createdAt: transaction?.createdAt
-        ? transaction.createdAt.split('T')[0]
-        : today,
-    });
-  }, [transaction]);
+  useEffect(() => {
+    reset(getDefaultValues(transaction));
+  }, [transaction, reset]);
 
-  const handleFieldChange =
-    (field: keyof Transaction) =>
-    (
-      event: SelectChangeEvent<unknown> | React.ChangeEvent<HTMLInputElement>
-    ) => {
-      setFormData(prev => ({ ...prev, [field]: event.target.value }));
-    };
-
-  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, amount: Number(event.target.value) }));
-  };
-
-  const handleSave = () => {
-    // Convert date string to ISO format if present
-    const dataToSave = {
-      ...formData,
-      createdAt: formData.createdAt
-        ? new Date(formData.createdAt).toISOString()
+  const onSubmit = (values: TransactionFormValues) => {
+    onSave({
+      type: values.type,
+      amount: Number(values.amount),
+      category: values.category,
+      behavior: values.behavior,
+      source: values.source || undefined,
+      description: values.description,
+      currency: 'VND',
+      createdAt: values.createdAt
+        ? new Date(values.createdAt).toISOString()
         : undefined,
-    };
-    onSave(dataToSave);
+    });
   };
 
   return (
-    <Box sx={FormContainerSx}>
+    <Box
+      component='form'
+      noValidate
+      onSubmit={handleSubmit(onSubmit)}
+      sx={formContainerSx}
+    >
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Box sx={{ width: 150 }}>
-          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('transactions.type')}
-          </Typography>
-          <FormControl fullWidth>
-            <Select
-              value={formData.type || ''}
-              onChange={handleFieldChange('type')}
-              displayEmpty
-            >
-              <MenuItem value='' disabled>
-                {t('transactions.type')}
+          <FormSelect
+            name='type'
+            control={control}
+            label={t('transactions.type')}
+          >
+            {Object.values(ExpenseType).map(type => (
+              <MenuItem key={type} value={type}>
+                {t(`transactions.${type}`)}
               </MenuItem>
-              {Object.values(ExpenseType).map(type => (
-                <MenuItem key={type} value={type}>
-                  {t(`transactions.${type}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            ))}
+          </FormSelect>
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('transactions.amount')}
-          </Typography>
-          <AmountInput
-            value={formData.amount || 0}
-            onChange={handleAmountChange}
+          <FormAmountInput
+            name='amount'
+            control={control}
+            label={t('transactions.amount')}
             fullWidth
           />
         </Box>
       </Box>
-      <Box>
-        <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('transactions.category')}
-        </Typography>
-        <FormControl fullWidth>
-          <Select
-            value={formData.category || ''}
-            onChange={handleFieldChange('category')}
-            displayEmpty
-          >
-            <MenuItem value='' disabled>
-              {t('transactions.category')}
-            </MenuItem>
-            {Object.values(ExpenseCategory).map(category => (
-              <MenuItem key={category} value={category}>
-                {t(`categories.${category}`)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+
+      <FormSelect
+        name='category'
+        control={control}
+        label={t('transactions.category')}
+      >
+        {Object.values(ExpenseCategory).map(category => (
+          <MenuItem key={category} value={category}>
+            {t(`categories.${category}`)}
+          </MenuItem>
+        ))}
+      </FormSelect>
+
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Box sx={{ flex: 1 }}>
-          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('transactions.behavior')}
-          </Typography>
-          <FormControl fullWidth>
-            <Select
-              value={formData.behavior || ''}
-              onChange={handleFieldChange('behavior')}
-            >
-              {Object.values(ExpenseBehavior).map(behavior => (
-                <MenuItem key={behavior} value={behavior}>
-                  {t(`transactions.${behavior}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <FormSelect
+            name='behavior'
+            control={control}
+            fullWidth
+            label={t('transactions.behavior')}
+          >
+            {Object.values(ExpenseBehavior).map(behavior => (
+              <MenuItem key={behavior} value={behavior}>
+                {t(`transactions.${behavior}`)}
+              </MenuItem>
+            ))}
+          </FormSelect>
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-            {t('transactions.source')}
-          </Typography>
-          <FormControl fullWidth>
-            <Select
-              value={formData.source || ''}
-              onChange={handleFieldChange('source')}
-              disabled={budgets?.length <= 0}
-              displayEmpty
-            >
-              <MenuItem value=''>
-                {budgets?.length <= 0
-                  ? t('overview.noBudgetsAvailable')
-                  : t('transactions.source')}
-              </MenuItem>
-              {budgets.map(({ label, value }: DropdownOption<any>) => (
-                <MenuItem value={value} key={value}>
-                  {label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <FormSelect
+            name='source'
+            control={control}
+            fullWidth
+            label={t('transactions.source')}
+            disabled={budgets?.length <= 0}
+          >
+            <MenuItem value=''>
+              {budgets?.length <= 0
+                ? t('overview.noBudgetsAvailable')
+                : t('transactions.source')}
+            </MenuItem>
+          </FormSelect>
         </Box>
       </Box>
-      <Box>
-        <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('transactions.date')}
-        </Typography>
-        <TextField
-          fullWidth
-          type='date'
-          value={formData.createdAt || ''}
-          onChange={e =>
-            setFormData(prev => ({ ...prev, createdAt: e.target.value }))
-          }
-          slotProps={{
-            inputLabel: {
-              shrink: true,
-            },
-          }}
-        />
-      </Box>
-      <Box>
-        <Typography variant='body2' sx={{ mb: 0.5, fontWeight: 500 }}>
-          {t('transactions.description')}
-        </Typography>
-        <TextField
-          fullWidth
-          multiline
-          rows={3}
-          placeholder={t('transactions.description')}
-          value={formData.description || ''}
-          onChange={e =>
-            setFormData(prev => ({ ...prev, description: e.target.value }))
-          }
-        />
-      </Box>
-      <Box sx={ActionButtonsContainerSx}>
-        <Button onClick={onCancel} variant='text' color='secondary'>
+
+      <FormTextField
+        name='createdAt'
+        control={control}
+        label={t('transactions.date')}
+        type='date'
+        fullWidth
+        slotProps={{ inputLabel: { shrink: true } }}
+      />
+
+      <FormTextField
+        name='description'
+        control={control}
+        label={t('transactions.description')}
+        placeholder={t('transactions.description')}
+        multiline
+        rows={3}
+        fullWidth
+      />
+
+      <Box sx={actionButtonsContainerSx}>
+        <Button type='button' onClick={onCancel} variant='text' color='primary'>
           {t('common.cancel')}
         </Button>
-        <Button
-          onClick={handleSave}
-          variant='contained'
-          color='primary'
-          disabled={(formData.amount || 0) <= 0}
-        >
+        <Button type='submit' variant='contained' color='primary'>
           {t('common.save')}
         </Button>
       </Box>
@@ -237,15 +192,14 @@ export const TransactionForm = ({
   );
 };
 
-// Styles
-const FormContainerSx: SxProps = {
+const formContainerSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
   gap: 2,
   mt: 2,
 };
 
-const ActionButtonsContainerSx: SxProps = {
+const actionButtonsContainerSx: SxProps = {
   display: 'flex',
   justifyContent: 'flex-end',
   gap: 1,

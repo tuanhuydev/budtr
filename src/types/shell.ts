@@ -2,7 +2,20 @@
  * Shell Service Registry Interface
  */
 export interface ShellServiceRegistry {
-  get<T = any>(name: string): T | null;
+  get<T = unknown>(name: string): T | null;
+}
+
+/**
+ * Toast Service Interface
+ */
+export type ToastSeverity = 'success' | 'error' | 'warning' | 'info';
+
+export interface ToastService {
+  notify: (message: string, severity?: ToastSeverity) => void;
+  success: (message: string) => void;
+  error: (message: string) => void;
+  warning: (message: string) => void;
+  info: (message: string) => void;
 }
 
 /**
