@@ -11,6 +11,7 @@ import React, {
 import { TabContainer } from './components/PageContainer';
 import { QueryProvider } from './components/providers/QueryProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import { AssetManagementLanding } from './features/assets/AssetManagementLanding';
 import { OverviewLanding } from './features/overview/OverviewLanding';
 import { TransactionLanding } from './features/transactions/TransactionLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
@@ -37,13 +38,8 @@ const App: React.FC = () => {
       content: <TransactionLanding />,
     },
     {
-      labelKey: 'tabs.budgets',
-      content: (
-        <div>
-          <h3>Budget Content</h3>
-          <p>Theme testing area.</p>
-        </div>
-      ),
+      labelKey: 'tabs.assetManagement',
+      content: <AssetManagementLanding />,
     },
   ];
 

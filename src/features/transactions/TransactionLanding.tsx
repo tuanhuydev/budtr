@@ -1,22 +1,8 @@
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import {
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  Alert,
-  Snackbar,
-  CircularProgress,
-} from '@mui/material';
-import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { Box, Button, CircularProgress, Menu, MenuItem } from '@mui/material';
+import { GridPaginationModel } from '@mui/x-data-grid';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
+import { ConfirmDeleteDialog } from '@/components/ConfirmDeleteDialog';
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
 import { useBudgets } from '@/hooks/api/useBudgets';
 import {
@@ -26,21 +12,23 @@ import {
   useDeleteTransaction,
 } from '@/hooks/api/useTransactions';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import { useShellService } from '@/hooks/useShellService';
+import type { ToastService } from '@/types/shell';
 import { Transaction } from '@/types/transaction';
-import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
-import { TransactionForm } from './components/TransactionForm';
+import { TransactionFormDialog } from './components/TransactionFormDialog';
+import { TransactionSummary } from './components/TransactionSummary';
+import { TransactionTable } from './components/TransactionTable';
 
 export const TransactionLanding = () => {
   // region Hooks
   const { t } = useBudtrTranslation();
+  const toast = useShellService<ToastService>('toast');
 
   const [dateRange, setDateRange] = useState<DateRange>(() => {
     const now = new Date();
-    const startDate = new Date(now);
-    startDate.setDate(now.getDate() - 3);
-    const endDate = new Date(now);
-    endDate.setDate(now.getDate() + 3);
+    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     return { startDate, endDate };
   });
 
@@ -83,19 +71,14 @@ export const TransactionLanding = () => {
     useState<Transaction | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error',
-  });
 
-  const handleMenuClick = (
-    event: React.MouseEvent<HTMLElement>,
-    transaction: Transaction
-  ) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedTransaction(transaction);
-  };
+  const handleMenuClick = useCallback(
+    (event: React.MouseEvent<HTMLElement>, transaction: Transaction) => {
+      setAnchorEl(event.currentTarget);
+      setSelectedTransaction(transaction);
+    },
+    []
+  );
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -147,22 +130,14 @@ export const TransactionLanding = () => {
         await createTransactionMutation.mutateAsync(transactionData);
       }
 
-      setSnackbar({
-        open: true,
-        message: t(
-          isEdit ? 'transactions.updateSuccess' : 'transactions.createSuccess'
-        ),
-        severity: 'success',
-      });
+      toast?.success(
+        t(isEdit ? 'transactions.updateSuccess' : 'transactions.createSuccess')
+      );
       handleModalClose();
     } catch {
-      setSnackbar({
-        open: true,
-        message: t(
-          isEdit ? 'transactions.updateFailed' : 'transactions.createFailed'
-        ),
-        severity: 'error',
-      });
+      toast?.error(
+        t(isEdit ? 'transactions.updateFailed' : 'transactions.createFailed')
+      );
     }
   };
 
@@ -171,17 +146,9 @@ export const TransactionLanding = () => {
 
     try {
       await deleteTransactionMutation.mutateAsync(selectedTransaction.id);
-      setSnackbar({
-        open: true,
-        message: t('transactions.deleteSuccess'),
-        severity: 'success',
-      });
+      toast?.success(t('transactions.deleteSuccess'));
     } catch {
-      setSnackbar({
-        open: true,
-        message: t('transactions.deleteFailed'),
-        severity: 'error',
-      });
+      toast?.error(t('transactions.deleteFailed'));
     } finally {
       setDeleteDialogOpen(false);
       setSelectedTransaction(null);
@@ -195,74 +162,6 @@ export const TransactionLanding = () => {
   const handleDateRangeChange = (newDateRange: DateRange) => {
     setDateRange(newDateRange);
   };
-
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: t('transactions.id'), width: 90 },
-    {
-      field: 'amount',
-      headerName: t('transactions.amount'),
-      width: 180,
-      renderCell: params => {
-        const { displayText, color } = formatTransactionAmount(
-          params.row.amount,
-          params.row.type,
-          params.row.currency
-        );
-        return (
-          <Typography variant='body2' sx={{ ...amountCellSx, color }}>
-            {displayText}
-          </Typography>
-        );
-      },
-    },
-    {
-      field: 'category',
-      headerName: t('transactions.category'),
-      width: 150,
-      renderCell: params =>
-        params.row?.category
-          ? t(`categories.${params.row.category}`)
-          : t(`categories.OTHER`),
-    },
-    {
-      field: 'behavior',
-      headerName: t('transactions.behavior'),
-      width: 100,
-      renderCell: params =>
-        params.row?.behavior
-          ? t(`transactions.${params.row.behavior}`)
-          : t(`categories.OTHER`),
-    },
-
-    {
-      field: 'createdAt',
-      headerName: t('transactions.createdAt'),
-      width: 180,
-      valueFormatter: value => new Date(value).toLocaleDateString(),
-    },
-    {
-      field: 'description',
-      headerName: t('transactions.description'),
-      flex: 1,
-      minWidth: 200,
-      renderCell: params => (
-        <Typography variant='body2' sx={descriptionCellSx}>
-          {params.row.description || t('transactions.noDescription')}
-        </Typography>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: t('transactions.actions'),
-      width: 100,
-      sortable: false,
-      renderCell: params => (
-        <IconButton onClick={e => handleMenuClick(e, params.row)}>
-          <MoreVertIcon />
-        </IconButton>
-      ),
-    },
-  ];
 
   if (transactionsLoading || budgetsLoading) {
     return (
@@ -294,25 +193,16 @@ export const TransactionLanding = () => {
         </Box>
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0 }}>
-        <DataGrid
-          rows={transactions}
-          columns={columns}
+      <Box sx={contentSx}>
+        <TransactionTable
+          transactions={transactions}
           rowCount={rowCount}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[5, 10, 25, 50]}
-          paginationMode='server'
           loading={transactionsLoading}
-          disableRowSelectionOnClick
-          disableColumnSorting
-          disableColumnMenu
-          sx={{
-            '& .MuiDataGrid-cell:focus': {
-              outline: 'none',
-            },
-          }}
+          onMenuClick={handleMenuClick}
         />
+        <TransactionSummary transactions={transactions} />
       </Box>
 
       {/* Action Menu */}
@@ -327,58 +217,21 @@ export const TransactionLanding = () => {
         </MenuItem>
       </Menu>
 
-      {/* Transaction Modal (Create/Edit) */}
-      <Dialog
+      <TransactionFormDialog
         open={modalOpen}
+        transaction={selectedTransaction}
+        budgets={budgets}
+        onSave={handleSave}
         onClose={handleModalClose}
-        maxWidth='sm'
-        fullWidth
-      >
-        <DialogTitle>
-          {selectedTransaction
-            ? t('transactions.editTransaction')
-            : t('transactions.createTransaction')}
-        </DialogTitle>
-        <DialogContent>
-          <TransactionForm
-            transaction={selectedTransaction || undefined}
-            budgets={budgets}
-            onSave={handleSave}
-            onCancel={handleModalClose}
-          />
-        </DialogContent>
-      </Dialog>
+      />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle>{t('transactions.confirmDelete')}</DialogTitle>
-        <DialogContent>
-          <Typography>{t('transactions.deleteConfirmMessage')}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button variant='text' color='info' onClick={handleDeleteCancel}>
-            {t('common.cancel')}
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            variant='contained'
-            color='error'
-          >
-            {t('common.delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        title={t('transactions.confirmDelete')}
+        message={t('transactions.deleteConfirmMessage')}
+        onConfirm={handleDeleteConfirm}
+        onClose={handleDeleteCancel}
+      />
     </Box>
   );
 };
@@ -399,19 +252,12 @@ const headerSx = {
   alignItems: 'center',
 };
 
-const amountCellSx = {
-  fontWeight: 600,
-  height: '100%',
+const contentSx = {
+  flex: 1,
+  minHeight: 0,
   display: 'flex',
-  alignItems: 'center',
-};
-
-const descriptionCellSx = {
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  height: '100%',
-  display: 'flex',
-  alignItems: 'center',
+  gap: 2,
+  flexDirection: { xs: 'column', md: 'row' },
 };
 
 const LoadingContainerSx = {

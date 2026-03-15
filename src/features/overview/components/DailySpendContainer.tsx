@@ -35,7 +35,7 @@ const DEFAULT_FORM_VALUES: CreateTransactionDTO = {
 
 interface DailySpendContainerProps {
   transactions: Transaction[];
-  budgets: any[];
+  budgets: unknown[];
 }
 
 export const DailySpendContainer = ({
@@ -122,11 +122,6 @@ export const DailySpendContainer = ({
                 ? t('overview.noBudgetsAvailable')
                 : t('overview.selectBudget')}
             </MenuItem>
-            {budgets.map(({ label, value }) => (
-              <MenuItem value={value} key={value}>
-                {label}
-              </MenuItem>
-            ))}
           </Select>
           <Select
             sx={{ width: 200 }}

@@ -52,7 +52,7 @@ export const AmountInput = (props?: TextFieldProps) => {
   );
 
   useEffect(() => {
-    setDisplayValue(formatAmount(String(value)));
+    setDisplayValue(formatAmount(sanitize(String(value))));
   }, [value]);
 
   return (

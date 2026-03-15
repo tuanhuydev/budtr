@@ -21,6 +21,9 @@ const budtrTranslations = {
       overview: 'Overview',
       transactions: 'Transactions',
       budgets: 'Budgets',
+      assetManagement: 'Asset Management',
+      AssetManagement: 'Asset Management',
+      AssetMangement: 'Asset Management',
     },
     overview: {
       dailySpends: 'Daily Spends',
@@ -86,6 +89,40 @@ const budtrTranslations = {
       deleteFailed: 'Failed to delete transaction',
       createSuccess: 'Transaction created successfully',
       createFailed: 'Failed to create transaction',
+      amountRequired: 'Amount must be greater than 0',
+      summary: 'Summary',
+      totalIncome: 'Total Income',
+      totalExpense: 'Total Expense',
+      net: 'Net',
+      byCategory: 'By Category',
+    },
+    assets: {
+      title: 'Asset Management',
+      createAsset: 'Create Asset',
+      editAsset: 'Edit Asset',
+      assetType: 'Type',
+      assetName: 'Name',
+      currentBalance: 'Current Balance',
+      currency: 'Currency',
+      noAssets: 'No assets found',
+      confirmDelete: 'Confirm Delete',
+      deleteConfirmMessage:
+        'Are you sure you want to delete this asset? This action cannot be undone.',
+      createSuccess: 'Asset created successfully',
+      createFailed: 'Failed to create asset',
+      updateSuccess: 'Asset updated successfully',
+      updateFailed: 'Failed to update asset',
+      deleteSuccess: 'Asset deleted successfully',
+      deleteFailed: 'Failed to delete asset',
+      nameRequired: 'Name is required',
+      typeRequired: 'Type is required',
+      currentBalanceInvalid: 'Current balance must be a valid number',
+      type: {
+        CASH: 'Cash',
+        BANK: 'Bank',
+        INVESTMENT: 'Investment',
+        PHYSICAL: 'Physical',
+      },
     },
     categories: {
       FOOD: 'Food',
@@ -118,6 +155,9 @@ const budtrTranslations = {
       overview: 'Tổng quan',
       transactions: 'Giao dịch',
       budgets: 'Ngân sách',
+      assetManagement: 'Quản lý tài sản',
+      AssetManagement: 'Quản lý tài sản',
+      AssetMangement: 'Quản lý tài sản',
     },
     overview: {
       dailySpends: 'Chi tiêu hàng ngày',
@@ -183,6 +223,40 @@ const budtrTranslations = {
       deleteFailed: 'Xóa giao dịch thất bại',
       createSuccess: 'Tạo giao dịch thành công',
       createFailed: 'Tạo giao dịch thất bại',
+      amountRequired: 'Số tiền phải lớn hơn 0',
+      summary: 'Tổng kết',
+      totalIncome: 'Tổng thu',
+      totalExpense: 'Tổng chi',
+      net: 'Còn lại',
+      byCategory: 'Theo danh mục',
+    },
+    assets: {
+      title: 'Quản lý tài sản',
+      createAsset: 'Tạo tài sản',
+      editAsset: 'Sửa tài sản',
+      assetType: 'Loại tài sản',
+      assetName: 'Tên',
+      currentBalance: 'Số dư hiện tại',
+      currency: 'Đơn vị tiền tệ',
+      noAssets: 'Không có tài sản',
+      confirmDelete: 'Xác nhận xóa',
+      deleteConfirmMessage:
+        'Bạn có chắc chắn muốn xóa tài sản này? Hành động này không thể hoàn tác.',
+      createSuccess: 'Tạo tài sản thành công',
+      createFailed: 'Tạo tài sản thất bại',
+      updateSuccess: 'Cập nhật tài sản thành công',
+      updateFailed: 'Cập nhật tài sản thất bại',
+      deleteSuccess: 'Xóa tài sản thành công',
+      deleteFailed: 'Xóa tài sản thất bại',
+      nameRequired: 'Tên là bắt buộc',
+      typeRequired: 'Loại tài sản là bắt buộc',
+      currentBalanceInvalid: 'Số dư hiện tại phải là số hợp lệ',
+      type: {
+        CASH: 'Tiền mặt',
+        BANK: 'Ngân hàng',
+        INVESTMENT: 'Đầu tư',
+        PHYSICAL: 'Tài sản vật chất',
+      },
     },
     categories: {
       FOOD: 'Ăn uống',
@@ -212,7 +286,6 @@ export function useI18n() {
 
   useEffect(() => {
     if (!i18nInstance) {
-      console.warn('[Budtr] i18n instance not available from shell');
       setIsReady(false);
       return;
     }
