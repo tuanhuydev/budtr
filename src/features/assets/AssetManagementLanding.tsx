@@ -16,6 +16,7 @@ import type { ToastService } from '@/types/shell';
 import { AssetCard } from './components/AssetCard';
 import { type AssetSaveData } from './components/AssetForm';
 import { AssetFormDialog } from './components/AssetFormDialog';
+import { AssetSummary } from './components/AssetSummary';
 
 export const AssetManagementLanding = () => {
   const { t } = useBudtrTranslation();
@@ -116,15 +117,18 @@ export const AssetManagementLanding = () => {
           </Typography>
         </Box>
       ) : (
-        <Box sx={cardsGridSx}>
-          {assets.map(asset => (
-            <AssetCard
-              key={asset.id}
-              asset={asset}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-            />
-          ))}
+        <Box sx={contentSx}>
+          <Box sx={cardsGridSx}>
+            {assets.map(asset => (
+              <AssetCard
+                key={asset.id}
+                asset={asset}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+              />
+            ))}
+          </Box>
+          <AssetSummary assets={assets} />
         </Box>
       )}
 
@@ -147,10 +151,10 @@ export const AssetManagementLanding = () => {
 };
 
 const containerSx = {
+  height: '100%',
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
-  gap: 2,
 };
 
 const loadingContainerSx = {
@@ -161,6 +165,8 @@ const loadingContainerSx = {
 };
 
 const headerSx = {
+  mb: 2,
+  mt: { xs: 2, md: 1 },
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -179,12 +185,22 @@ const emptyStateSx = {
   bgcolor: 'background.paper',
 };
 
+const contentSx = {
+  flex: 1,
+  minHeight: 0,
+  display: 'flex',
+  gap: 2,
+  flexDirection: { xs: 'column', md: 'row' },
+};
+
 const cardsGridSx = {
+  flex: 1,
   display: 'grid',
   gridTemplateColumns: {
     xs: '1fr',
-    sm: 'repeat(2, minmax(0, 1fr))',
-    lg: 'repeat(3, minmax(0, 1fr))',
+    sm: 'repeat(auto-fit, minmax(min(100%, 300px), 400px))',
   },
   gap: 2,
+  alignContent: 'start',
+  justifyContent: 'start',
 };
