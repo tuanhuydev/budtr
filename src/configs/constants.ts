@@ -34,4 +34,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
   OTHER: '#9E9E9E',
 };
 
+export const HIDDEN_BALANCE_PATTERN = '******** ***';
+
 export const AUTH_URL = process.env.APP_AUTH_URL ?? 'http://localhost:8888';

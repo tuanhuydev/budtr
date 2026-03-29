@@ -1,7 +1,11 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Box, Chip, IconButton, Typography } from '@mui/material';
+import { useState } from 'react';
 
+import { HIDDEN_BALANCE_PATTERN } from '@/configs/constants';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { Asset, AssetType } from '@/types/asset';
 
@@ -24,6 +28,7 @@ const ASSET_TYPE_COLOR: Record<
 export const AssetCard = ({ asset, onEdit, onDelete }: AssetCardProps) => {
   const { t } = useBudtrTranslation();
   const typeColor = ASSET_TYPE_COLOR[asset.type] ?? 'default';
+  const [showBalance, setShowBalance] = useState(false);
 
   return (
     <Box sx={cardSx}>
@@ -57,12 +62,29 @@ export const AssetCard = ({ asset, onEdit, onDelete }: AssetCardProps) => {
         {asset.name}
       </Typography>
 
-      <Typography variant='caption' color='text.secondary'>
-        {t('assets.currentBalance')}
-      </Typography>
-      <Typography variant='h5' sx={{ fontWeight: 700 }}>
-        {asset.currentBalance.toLocaleString()}
-      </Typography>
+      <Box sx={balanceContainerSx}>
+        <Box>
+          <Typography variant='caption' color='text.secondary'>
+            {t('assets.currentBalance')}
+          </Typography>
+          <Typography variant='h5' sx={{ fontWeight: 700 }}>
+            {showBalance
+              ? `${asset.currentBalance.toLocaleString()} ${asset.currency || 'VND'}`
+              : HIDDEN_BALANCE_PATTERN}
+          </Typography>
+        </Box>
+        <IconButton
+          size='small'
+          onClick={() => setShowBalance(!showBalance)}
+          aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+        >
+          {showBalance ? (
+            <VisibilityOff fontSize='small' />
+          ) : (
+            <Visibility fontSize='small' />
+          )}
+        </IconButton>
+      </Box>
     </Box>
   );
 };
@@ -73,6 +95,7 @@ const cardSx = {
   border: '1px solid',
   borderColor: 'divider',
   bgcolor: 'background.paper',
+  maxWidth: 400,
 };
 
 const topRowSx = {
@@ -85,4 +108,11 @@ const actionsSx = {
   display: 'flex',
   alignItems: 'center',
   gap: 0.5,
+};
+
+const balanceContainerSx = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: 1,
 };

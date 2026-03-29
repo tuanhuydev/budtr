@@ -13,15 +13,15 @@ import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
 const buildSchema = (msgs: { amountRequired: string }) =>
   z.object({
-    type: z.nativeEnum(ExpenseType),
+    type: z.enum(ExpenseType),
     amount: z
       .string()
       .refine(
         v => !Number.isNaN(Number(v)) && Number(v) > 0,
         msgs.amountRequired
       ),
-    category: z.nativeEnum(ExpenseCategory),
-    behavior: z.nativeEnum(ExpenseBehavior),
+    category: z.enum(ExpenseCategory),
+    behavior: z.enum(ExpenseBehavior),
     source: z.string(),
     createdAt: z.string().min(1),
     description: z.string(),
