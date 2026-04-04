@@ -30,7 +30,11 @@ const sizing = {
   hideLegend: true,
 };
 
-export const MoneyMix = () => {
+interface MoneyMixProps {
+  today: Date;
+}
+
+export const MoneyMix = ({ today }: MoneyMixProps) => {
   const { t } = useBudtrTranslation();
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('today');
   const [customDateRange, setCustomDateRange] = useState<DateRange>({
@@ -54,23 +58,22 @@ export const MoneyMix = () => {
   ];
 
   const getDateRange = (period: TimePeriod): { start: Date; end: Date } => {
-    const now = new Date();
     switch (period) {
       case 'today':
-        return { start: startOfDay(now), end: endOfDay(now) };
+        return { start: startOfDay(today), end: endOfDay(today) };
       case 'week':
-        return { start: startOfWeek(now), end: endOfWeek(now) };
+        return { start: startOfWeek(today), end: endOfWeek(today) };
       case 'month':
-        return { start: startOfMonth(now), end: endOfMonth(now) };
+        return { start: startOfMonth(today), end: endOfMonth(today) };
       case 'year':
-        return { start: startOfYear(now), end: endOfYear(now) };
+        return { start: startOfYear(today), end: endOfYear(today) };
       case 'custom':
         return {
-          start: customDateRange.startDate || startOfDay(now),
-          end: customDateRange.endDate || endOfDay(now),
+          start: customDateRange.startDate || startOfDay(today),
+          end: customDateRange.endDate || endOfDay(today),
         };
       default:
-        return { start: startOfDay(now), end: endOfDay(now) };
+        return { start: startOfDay(today), end: endOfDay(today) };
     }
   };
 

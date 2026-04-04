@@ -2,8 +2,27 @@ import { AUTH_URL } from '../configs/constants';
 import type { Asset } from '../types/asset';
 import { ExpenseBehavior } from '../types/common';
 import type { ApiClient } from '../types/shell';
-import type { Stats } from '../types/stats';
 import type { Transaction } from '../types/transaction';
+
+// Stats API types
+export type TransactionByCategory = {
+  key: string;
+  amount: number;
+  count: number;
+};
+
+export type TransactionByDay = {
+  day: string;
+  amount: number;
+  count: number;
+};
+
+export type StatsResponse = {
+  weeklyComparison: Array<Record<string, unknown>>;
+  weeklyTransactions: TransactionByCategory[];
+  currentWeek: TransactionByDay[];
+  topTransactions: Transaction[];
+};
 
 export interface FetchTransactionsParams {
   startDate?: Date | null;
@@ -218,9 +237,8 @@ export const assetsApi = {
   },
 };
 
-// TODO: Enhance stats API and types
 export const statsApi = {
-  fetchStats: async (apiClient: ApiClient): Promise<Stats> => {
+  fetchStats: async (apiClient: ApiClient): Promise<StatsResponse> => {
     const url = `${AUTH_URL}/transactions/stats`;
 
     const response = await apiClient.request(url, {

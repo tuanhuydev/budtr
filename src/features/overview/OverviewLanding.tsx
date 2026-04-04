@@ -1,5 +1,6 @@
 import { Box, SxProps, CircularProgress } from '@mui/material';
 import { startOfDay, endOfDay } from 'date-fns';
+import { useMemo } from 'react';
 
 import { useBudgets } from '../../hooks/api/useBudgets';
 import { useTransactions } from '../../hooks/api/useTransactions';
@@ -11,7 +12,7 @@ import { TopTransactions } from './components/TopTransactions';
 import { WeeklyComparison } from './components/WeeklyComparison';
 
 export const OverviewLanding = () => {
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
 
   // Fetch daily transactions for DailySpendContainer
   const { data: dailyTransactions, isLoading: dailyTransactionsLoading } =
@@ -38,10 +39,10 @@ export const OverviewLanding = () => {
         <DailySpendContainer transactions={transactions} budgets={budgets} />
       </Box>
       <Box sx={RightColumnSx}>
-        <MoneyMix />
-        <TopTransactions />
-        <CurrentWeekTransactions />
+        <MoneyMix today={today} />
         <WeeklyComparison />
+        <CurrentWeekTransactions />
+        <TopTransactions />
       </Box>
     </Box>
   );
