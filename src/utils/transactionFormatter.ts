@@ -8,14 +8,27 @@ export interface FormattedAmount {
 
 export const formatChartValue = (value: number): string => {
   const absValue = Math.abs(value);
+  const formatScaledValue = (scaledValue: number): string =>
+    scaledValue.toFixed(1).replace(/\.0$/, '');
+
   if (absValue >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(1).replace(/\.0$/, '')} bil`;
+    return `${formatScaledValue(value / 1_000_000_000)} bil`;
   }
   if (absValue >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')} mil`;
+    const roundedInMillions = Number((absValue / 1_000_000).toFixed(1));
+    if (roundedInMillions >= 1000) {
+      return `${formatScaledValue(value / 1_000_000_000)} bil`;
+    }
+
+    return `${formatScaledValue(value / 1_000_000)} mil`;
   }
   if (absValue >= 1_000) {
-    return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
+    const roundedInThousands = Number((absValue / 1_000).toFixed(1));
+    if (roundedInThousands >= 1000) {
+      return `${formatScaledValue(value / 1_000_000)} mil`;
+    }
+
+    return `${formatScaledValue(value / 1_000)}k`;
   }
   return value.toFixed(0);
 };
