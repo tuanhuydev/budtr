@@ -6,28 +6,16 @@ import { useMemo } from 'react';
 import { useStats } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseType } from '@/types/common';
-import { formatTransactionAmount } from '@/utils/transactionFormatter';
+import {
+  formatChartValue,
+  formatTransactionAmount,
+} from '@/utils/transactionFormatter';
 
 export const CurrentWeekTransactions = () => {
   const { t } = useBudtrTranslation();
   const { data: stats } = useStats();
 
   const currentWeek = stats?.currentWeek || [];
-
-  // Format large numbers to human-readable format
-  const formatYAxisValue = (value: number): string => {
-    const absValue = Math.abs(value);
-    if (absValue >= 1_000_000_000) {
-      return `${(value / 1_000_000_000).toFixed(1)}B`;
-    }
-    if (absValue >= 1_000_000) {
-      return `${(value / 1_000_000).toFixed(1)}M`;
-    }
-    if (absValue >= 1_000) {
-      return `${(value / 1_000).toFixed(1)}K`;
-    }
-    return value.toFixed(0);
-  };
 
   const { chartData, xAxisData } = useMemo(() => {
     if (!currentWeek || currentWeek.length === 0) {
@@ -75,7 +63,7 @@ export const CurrentWeekTransactions = () => {
           ]}
           yAxis={[
             {
-              valueFormatter: formatYAxisValue,
+              valueFormatter: formatChartValue,
             },
           ]}
           series={[

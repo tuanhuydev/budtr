@@ -7,7 +7,10 @@ import { CATEGORY_COLORS } from '@/configs/constants';
 import { useStats, WeeklyComparisonItem } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseType } from '@/types/common';
-import { formatTransactionAmount } from '@/utils/transactionFormatter';
+import {
+  formatChartValue,
+  formatTransactionAmount,
+} from '@/utils/transactionFormatter';
 
 export const WeeklyComparison = () => {
   const { t } = useBudtrTranslation();
@@ -15,21 +18,6 @@ export const WeeklyComparison = () => {
 
   const weeklyComparison: WeeklyComparisonItem[] =
     stats?.weeklyComparison || [];
-
-  // Format large numbers to human-readable format
-  const formatYAxisValue = (value: number): string => {
-    const absValue = Math.abs(value);
-    if (absValue >= 1_000_000_000) {
-      return `${(value / 1_000_000_000).toFixed(1)}B`;
-    }
-    if (absValue >= 1_000_000) {
-      return `${(value / 1_000_000).toFixed(1)}M`;
-    }
-    if (absValue >= 1_000) {
-      return `${(value / 1_000).toFixed(1)}K`;
-    }
-    return value.toFixed(0);
-  };
 
   const { chartSeries, xAxisData } = useMemo(() => {
     if (!weeklyComparison || weeklyComparison.length === 0) {
@@ -102,13 +90,22 @@ export const WeeklyComparison = () => {
           ]}
           yAxis={[
             {
-              valueFormatter: formatYAxisValue,
+              valueFormatter: formatChartValue,
             },
           ]}
           series={chartSeries}
           width={280}
-          height={320}
-          margin={{ left: 20, right: 20, top: 10, bottom: 50 }}
+          height={230}
+          margin={{ left: 20, right: 20, top: 10, bottom: 10 }}
+          slotProps={{
+            legend: {
+              sx: {
+                maxHeight: 50,
+                overflowY: 'auto',
+                flexWrap: 'wrap',
+              },
+            },
+          }}
         />
       </Box>
     </Box>
