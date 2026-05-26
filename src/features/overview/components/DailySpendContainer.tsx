@@ -216,7 +216,7 @@ const TransactionListSx: SxProps = {
   gap: 1,
   overflowY: 'auto',
   flex: 1,
-  maxHeight: 'calc(100% - 100px)',
+  maxHeight: 300,
   minHeight: 0,
   '&::-webkit-scrollbar': {
     width: '8px',

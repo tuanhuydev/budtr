@@ -6,6 +6,20 @@ export interface FormattedAmount {
   sign: '+' | '-';
 }
 
+export const formatChartValue = (value: number): string => {
+  const absValue = Math.abs(value);
+  if (absValue >= 1_000_000_000) {
+    return `${(value / 1_000_000_000).toFixed(1).replace(/\.0$/, '')} bil`;
+  }
+  if (absValue >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')} mil`;
+  }
+  if (absValue >= 1_000) {
+    return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}k`;
+  }
+  return value.toFixed(0);
+};
+
 export const formatTransactionAmount = (
   amount: number,
   type: ExpenseType,

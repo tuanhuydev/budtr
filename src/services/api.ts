@@ -2,6 +2,7 @@ import { AUTH_URL } from '../configs/constants';
 import type { Asset } from '../types/asset';
 import { ExpenseBehavior } from '../types/common';
 import type { ApiClient } from '../types/shell';
+import type { Stats } from '../types/stats';
 import type { Transaction } from '../types/transaction';
 
 export interface FetchTransactionsParams {
@@ -219,7 +220,7 @@ export const assetsApi = {
 
 // TODO: Enhance stats API and types
 export const statsApi = {
-  fetchStats: async (apiClient: ApiClient): Promise<unknown> => {
+  fetchStats: async (apiClient: ApiClient): Promise<Stats> => {
     const url = `${AUTH_URL}/transactions/stats`;
 
     const response = await apiClient.request(url, {

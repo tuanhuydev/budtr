@@ -22,7 +22,7 @@ export const OverviewLanding = () => {
 
   const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
 
-  const transactions = dailyTransactions?.expenses ?? [];
+  const transactions = dailyTransactions?.transactions ?? [];
 
   if (dailyTransactionsLoading || budgetsLoading) {
     return (
@@ -39,9 +39,9 @@ export const OverviewLanding = () => {
       </Box>
       <Box sx={RightColumnSx}>
         <MoneyMix />
-        <WeeklyComparison />
-        <CurrentWeekTransactions />
         <TopTransactions />
+        <CurrentWeekTransactions />
+        <WeeklyComparison />
       </Box>
     </Box>
   );
