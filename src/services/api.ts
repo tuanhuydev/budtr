@@ -1,8 +1,8 @@
 import { AUTH_URL } from '../configs/constants';
-import { Stats } from '../hooks/api/useStats';
 import type { Asset } from '../types/asset';
 import { ExpenseBehavior } from '../types/common';
 import type { ApiClient } from '../types/shell';
+import type { Stats } from '../types/stats';
 import type { Transaction } from '../types/transaction';
 
 export interface FetchTransactionsParams {
