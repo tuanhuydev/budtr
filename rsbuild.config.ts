@@ -60,6 +60,11 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       exposes: {
         './App': './src/App.tsx',
+        './BudgetVsActual': './src/features/overview/components/insights/BudgetVsActual.tsx',
+        './SpendingTrends': './src/features/overview/components/insights/SpendingTrends.tsx',
+        './CategoryBreakdown': './src/features/overview/components/insights/CategoryBreakdown.tsx',
+        './MonthlyComparison': './src/features/overview/components/insights/MonthlyComparison.tsx',
+        './SavingsProgress': './src/features/overview/components/insights/SavingsProgress.tsx',
       },
       shared: {
         react: {

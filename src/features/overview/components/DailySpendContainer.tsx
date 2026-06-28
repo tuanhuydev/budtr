@@ -80,7 +80,7 @@ export const DailySpendContainer = ({
 
   return (
     <Box sx={ContainerSx}>
-      <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+      <Typography component='h3' sx={TitleSx}>
         {t('overview.dailySpends')}
       </Typography>
       <Box flexDirection='column' gap={1} display={'flex'}>
@@ -200,14 +200,21 @@ export const DailySpendContainer = ({
 };
 
 // Styles
+const TitleSx: SxProps = {
+  fontWeight: 600,
+  mb: 1,
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 400 },
+  height: 400,
   background: 'white',
   border: `solid 1px ${grey[200]}`,
   borderRadius: 2,
   p: 2,
   display: 'flex',
   flexDirection: 'column',
+  overflow: 'hidden',
 };
 
 const TransactionListSx: SxProps = {

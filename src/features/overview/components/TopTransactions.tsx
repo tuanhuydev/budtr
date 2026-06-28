@@ -29,7 +29,7 @@ export const TopTransactions = () => {
   if (!topTransactions || topTransactions.length === 0) {
     return (
       <Box sx={ContainerSx}>
-        <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+        <Typography variant='body2' sx={TitleSx}>
           {t('overview.topTransactions')}
         </Typography>
 
@@ -44,7 +44,7 @@ export const TopTransactions = () => {
 
   return (
     <Box sx={ContainerSx}>
-      <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+      <Typography component='h3' sx={TitleSx}>
         {t('overview.topTransactions')}
       </Typography>
 
@@ -94,6 +94,11 @@ export const TopTransactions = () => {
 };
 
 // Styles
+const TitleSx: SxProps = {
+  fontWeight: 600,
+  mb: 1,
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 400 },
   height: 400,

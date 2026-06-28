@@ -131,6 +131,7 @@ const budtrTranslations = {
       },
     },
     categories: {
+      NONE: 'None',
       FOOD: 'Food',
       TRANSPORTATION: 'Transportation',
       ENTERTAINMENT: 'Entertainment',
@@ -143,6 +144,18 @@ const budtrTranslations = {
       BUSINESS: 'Business',
       INVESTMENT: 'Investment',
       OTHER: 'Other',
+    },
+    insights: {
+      title: 'Insights',
+      budgetVsActual: 'Budget vs Actual',
+      spendingTrends: 'Spending Trends',
+      categoryBreakdown: 'Category Breakdown',
+      monthlyComparison: 'Monthly Comparison',
+      savingsProgress: 'Savings Progress',
+      savings: 'Savings',
+      projected: 'Projected',
+      total: 'Total',
+      chartLoadError: 'Could not load chart',
     },
   },
   vi: {
@@ -271,6 +284,7 @@ const budtrTranslations = {
       },
     },
     categories: {
+      NONE: 'Không có',
       FOOD: 'Ăn uống',
       TRANSPORTATION: 'Di chuyển',
       ENTERTAINMENT: 'Giải trí',
@@ -283,6 +297,18 @@ const budtrTranslations = {
       BUSINESS: 'Kinh doanh',
       INVESTMENT: 'Đầu tư',
       OTHER: 'Khác',
+    },
+    insights: {
+      title: 'Phân tích',
+      budgetVsActual: 'Ngân sách vs Thực tế',
+      spendingTrends: 'Xu hướng chi tiêu',
+      categoryBreakdown: 'Phân tích danh mục',
+      monthlyComparison: 'So sánh theo tháng',
+      savingsProgress: 'Tiến độ tiết kiệm',
+      savings: 'Tiết kiệm',
+      projected: 'Dự kiến',
+      total: 'Tổng',
+      chartLoadError: 'Không thể tải biểu đồ',
     },
   },
 };

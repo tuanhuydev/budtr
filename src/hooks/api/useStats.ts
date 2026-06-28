@@ -1,13 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { statsApi } from '../../services/api';
+import {
+  statsApi,
+  StatsResponse,
+  TransactionByCategory,
+  TransactionByDay,
+  WeeklyComparisonItem,
+} from '../../services/api';
 import { ApiClient } from '../../types/shell';
-import type { Stats } from '../../types/stats';
 import { useShellService } from '../useShellService';
 
-export type { Stats, TransactionByCategory, TransactionByDay, WeeklyComparisonItem } from '../../types/stats';
-
 export const STATS_QUERY_KEY = 'stats';
+
+export type { TransactionByCategory, TransactionByDay, WeeklyComparisonItem };
+
+export type Stats = StatsResponse;
 
 export const useStats = () => {
   const apiClient = useShellService<ApiClient>('apiClient');
