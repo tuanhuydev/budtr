@@ -5,15 +5,14 @@ import {
   StatsResponse,
   TransactionByCategory,
   TransactionByDay,
+  WeeklyComparisonItem,
 } from '../../services/api';
 import { ApiClient } from '../../types/shell';
 import { useShellService } from '../useShellService';
 
 export const STATS_QUERY_KEY = 'stats';
 
-export type { TransactionByCategory, TransactionByDay };
-
-export type WeeklyComparisonItem = Record<string, unknown>;
+export type { TransactionByCategory, TransactionByDay, WeeklyComparisonItem };
 
 export type Stats = StatsResponse;
 

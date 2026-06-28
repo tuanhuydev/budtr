@@ -202,12 +202,14 @@ export const DailySpendContainer = ({
 // Styles
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 400 },
+  height: 400,
   background: 'white',
   border: `solid 1px ${grey[200]}`,
   borderRadius: 2,
   p: 2,
   display: 'flex',
   flexDirection: 'column',
+  overflow: 'hidden',
 };
 
 const TransactionListSx: SxProps = {
