@@ -1,5 +1,13 @@
 import { AUTH_URL } from '../configs/constants';
 import type { Asset } from '../types/asset';
+import type {
+  BudgetVsActualChart,
+  CategoryBreakdownChart,
+  ChartName,
+  MonthlyComparisonChart,
+  SavingsProgressChart,
+  SpendingTrendsChart,
+} from '../types/charts';
 import { ExpenseBehavior } from '../types/common';
 import type { ApiClient } from '../types/shell';
 import type { Transaction } from '../types/transaction';
@@ -17,8 +25,13 @@ export type TransactionByDay = {
   count: number;
 };
 
+export type WeeklyComparisonItem = {
+  label: string;
+  [key: string]: string | number;
+};
+
 export type StatsResponse = {
-  weeklyComparison: Array<Record<string, unknown>>;
+  weeklyComparison: WeeklyComparisonItem[];
   weeklyTransactions: TransactionByCategory[];
   currentWeek: TransactionByDay[];
   topTransactions: Transaction[];
@@ -254,4 +267,54 @@ export const statsApi = {
 
     return response.json();
   },
+};
+
+function getTzOffset(): string {
+  const offset = -new Date().getTimezoneOffset();
+  const sign = offset >= 0 ? '+' : '-';
+  const abs = Math.abs(offset);
+  const hh = String(Math.floor(abs / 60)).padStart(2, '0');
+  const mm = String(abs % 60).padStart(2, '0');
+  return `${sign}${hh}:${mm}`;
+}
+
+async function fetchChart<T>(
+  apiClient: ApiClient,
+  name: ChartName
+): Promise<T> {
+  const tz = getTzOffset();
+  const url = `${AUTH_URL}/stats?chart=${name}&tz=${encodeURIComponent(tz)}`;
+
+  const response = await apiClient.request(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Chart fetch failed: ${name} (${response.status})`);
+  }
+
+  const json = await response.json();
+  const result = json[name];
+  if (result === undefined || result === null) {
+    throw new Error(`Chart data missing in response: ${name}`);
+  }
+  return result as T;
+}
+
+export const chartsApi = {
+  fetchBudgetVsActual: (apiClient: ApiClient) =>
+    fetchChart<BudgetVsActualChart>(apiClient, 'budget_vs_actual'),
+
+  fetchSpendingTrends: (apiClient: ApiClient) =>
+    fetchChart<SpendingTrendsChart>(apiClient, 'spending_trends'),
+
+  fetchCategoryBreakdown: (apiClient: ApiClient) =>
+    fetchChart<CategoryBreakdownChart>(apiClient, 'category_breakdown'),
+
+  fetchMonthlyComparison: (apiClient: ApiClient) =>
+    fetchChart<MonthlyComparisonChart>(apiClient, 'monthly_comparison'),
+
+  fetchSavingsProgress: (apiClient: ApiClient) =>
+    fetchChart<SavingsProgressChart>(apiClient, 'savings_progress'),
 };

@@ -34,7 +34,7 @@ export const CurrentWeekTransactions = () => {
   if (!currentWeek || currentWeek.length === 0) {
     return (
       <Box sx={ContainerSx}>
-        <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+        <Typography variant='body2' sx={TitleSx}>
           {t('overview.currentWeekTransactions')}
         </Typography>
 
@@ -49,7 +49,7 @@ export const CurrentWeekTransactions = () => {
 
   return (
     <Box sx={ContainerSx}>
-      <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+      <Typography component='h3' sx={TitleSx}>
         {t('overview.currentWeekTransactions')}
       </Typography>
 
@@ -77,6 +77,7 @@ export const CurrentWeekTransactions = () => {
                   : '',
             },
           ]}
+          borderRadius={4}
           width={380}
           height={320}
           margin={{ left: 30, right: 30, top: 10, bottom: 50 }}
@@ -87,6 +88,11 @@ export const CurrentWeekTransactions = () => {
 };
 
 // Styles
+const TitleSx: SxProps = {
+  fontWeight: 600,
+  mb: 1,
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 400 },
   height: 400,

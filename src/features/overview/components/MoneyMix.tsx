@@ -203,7 +203,7 @@ export const MoneyMix = ({ today }: MoneyMixProps) => {
   if (chartData.length === 0) {
     return (
       <Box sx={ContainerSx}>
-        <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+        <Typography variant='body2' sx={TitleSx}>
           {t(titleKey)}
         </Typography>
 
@@ -220,7 +220,7 @@ export const MoneyMix = ({ today }: MoneyMixProps) => {
 
   return (
     <Box sx={ContainerSx}>
-      <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+      <Typography component='h3' sx={TitleSx}>
         {t(titleKey)}
       </Typography>
 
@@ -232,6 +232,8 @@ export const MoneyMix = ({ today }: MoneyMixProps) => {
             {
               innerRadius: 60,
               outerRadius: 100,
+              paddingAngle: 2,
+              cornerRadius: 3,
               valueFormatter: item => {
                 const dataItem = chartData.find(d => d.value === item.value);
                 return dataItem?.formattedValue || '';
@@ -258,6 +260,11 @@ export const MoneyMix = ({ today }: MoneyMixProps) => {
 };
 
 // Styles
+const TitleSx: SxProps = {
+  fontWeight: 600,
+  mb: 1,
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 300 },
   height: 400,

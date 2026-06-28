@@ -113,28 +113,30 @@ export const TransactionSummary = ({
           <Typography variant='body2' sx={{ fontWeight: 600, mb: 1 }}>
             {t('transactions.byCategory')}
           </Typography>
-          {categoryBreakdown.map(({ category, amount }) => (
-            <Box key={category} sx={CategoryRowSx}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box
-                  sx={{
-                    ...ColorDotSx,
-                    backgroundColor:
-                      CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER,
-                  }}
-                />
-                <Typography variant='body2'>
-                  {t(`categories.${category}`)}
+          <Box sx={CategoryListSx}>
+            {categoryBreakdown.map(({ category, amount }) => (
+              <Box key={category} sx={CategoryRowSx}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      ...ColorDotSx,
+                      backgroundColor:
+                        CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER,
+                    }}
+                  />
+                  <Typography variant='body2'>
+                    {t(`categories.${category}`)}
+                  </Typography>
+                </Box>
+                <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                  {
+                    formatTransactionAmount(amount, ExpenseType.EXPENSE)
+                      .displayText
+                  }
                 </Typography>
               </Box>
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                {
-                  formatTransactionAmount(amount, ExpenseType.EXPENSE)
-                    .displayText
-                }
-              </Typography>
-            </Box>
-          ))}
+            ))}
+          </Box>
         </Box>
       )}
     </Box>
@@ -142,9 +144,14 @@ export const TransactionSummary = ({
 };
 
 // Styles
+const CategoryListSx: SxProps = {
+  maxHeight: 120,
+  overflow: 'auto',
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 300 },
-  minHeight: 200,
+  height: 400,
   background: 'white',
   border: `solid 1px ${grey[200]}`,
   borderRadius: 2,

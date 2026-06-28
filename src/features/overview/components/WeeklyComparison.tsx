@@ -61,7 +61,7 @@ export const WeeklyComparison = () => {
   if (!weeklyComparison || weeklyComparison.length === 0) {
     return (
       <Box sx={ContainerSx}>
-        <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+        <Typography variant='body2' sx={TitleSx}>
           {t('overview.weeklyComparison')}
         </Typography>
 
@@ -76,7 +76,7 @@ export const WeeklyComparison = () => {
 
   return (
     <Box sx={ContainerSx}>
-      <Typography component={'h3'} sx={{ mb: 1.5, color: grey[600] }}>
+      <Typography component='h3' sx={TitleSx}>
         {t('overview.weeklyComparison')}
       </Typography>
 
@@ -94,6 +94,7 @@ export const WeeklyComparison = () => {
             },
           ]}
           series={chartSeries}
+          borderRadius={4}
           width={280}
           height={230}
           margin={{ left: 20, right: 20, top: 10, bottom: 10 }}
@@ -113,6 +114,11 @@ export const WeeklyComparison = () => {
 };
 
 // Styles
+const TitleSx: SxProps = {
+  fontWeight: 600,
+  mb: 1,
+};
+
 const ContainerSx: SxProps = {
   width: { xs: '100%', md: 300 },
   height: 400,

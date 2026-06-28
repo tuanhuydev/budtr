@@ -20,6 +20,7 @@ export const categoryOptions: Array<DropdownOption<ExpenseCategory>> = [
   { label: 'Other', value: ExpenseCategory.OTHER },
 ];
 export const CATEGORY_COLORS: Record<string, string> = {
+  NONE: '#CBD5E1',
   FOOD: '#0088FE',
   TRANSPORTATION: '#00C49F',
   ENTERTAINMENT: '#FFBB28',
