@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 import { ConfirmDeleteDialog } from '@/components/ConfirmDeleteDialog';
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
-import { useBudgets } from '@/hooks/api/useBudgets';
+import { useAssets } from '@/hooks/api/useAssets';
 import {
   useTransactions,
   useCreateTransaction,
@@ -45,7 +45,7 @@ export const TransactionLanding = () => {
       page: paginationModel.page,
       pageSize: paginationModel.pageSize,
     });
-  const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
+  const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
   const deleteTransactionMutation = useDeleteTransaction();
@@ -163,7 +163,7 @@ export const TransactionLanding = () => {
     setDateRange(newDateRange);
   };
 
-  if (transactionsLoading || budgetsLoading) {
+  if (transactionsLoading || assetsLoading) {
     return (
       <Box sx={LoadingContainerSx}>
         <CircularProgress />
@@ -220,7 +220,7 @@ export const TransactionLanding = () => {
       <TransactionFormDialog
         open={modalOpen}
         transaction={selectedTransaction}
-        budgets={budgets}
+        assets={assets}
         onSave={handleSave}
         onClose={handleModalClose}
       />

@@ -8,6 +8,7 @@ import { FormAmountInput } from '@/components/form/FormAmountInput';
 import { FormSelect } from '@/components/form/FormSelect';
 import { FormTextField } from '@/components/form/FormTextField';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import type { Asset } from '@/types/asset';
 import { ExpenseBehavior } from '@/types/common';
 import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
@@ -44,14 +45,14 @@ const getDefaultValues = (tx?: Partial<Transaction>): TransactionFormValues => {
 
 interface TransactionFormProps {
   transaction?: Partial<Transaction>;
-  budgets: unknown[];
+  assets: Asset[];
   onSave: (data: Partial<Transaction>) => void;
   onCancel: () => void;
 }
 
 export const TransactionForm = ({
   transaction,
-  budgets,
+  assets,
   onSave,
   onCancel,
 }: TransactionFormProps) => {
@@ -150,13 +151,19 @@ export const TransactionForm = ({
             control={control}
             fullWidth
             label={t('transactions.source')}
-            disabled={budgets?.length <= 0}
+            disabled={assets?.length <= 0}
           >
             <MenuItem value=''>
-              {budgets?.length <= 0
-                ? t('overview.noBudgetsAvailable')
+              {assets?.length <= 0
+                ? t('transactions.noSourceAvailable')
                 : t('transactions.source')}
             </MenuItem>
+            {assets.map(asset => (
+              <MenuItem key={asset.id} value={asset.id}>
+                {asset.name} ({asset.currentBalance.toLocaleString()}{' '}
+                {asset.currency || 'VND'})
+              </MenuItem>
+            ))}
           </FormSelect>
         </Box>
       </Box>

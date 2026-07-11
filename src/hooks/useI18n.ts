@@ -80,6 +80,7 @@ const budtrTranslations = {
       deleteConfirmMessage:
         'Are you sure you want to delete this transaction? This action cannot be undone.',
       source: 'Source',
+      noSourceAvailable: 'No asset sources available',
       currency: 'Currency',
       type: 'Type',
       noDescription: 'No description',
@@ -233,6 +234,7 @@ const budtrTranslations = {
       deleteConfirmMessage:
         'Bạn có chắc chắn muốn xóa giao dịch này? Hành động này không thể hoàn tác.',
       source: 'Nguồn',
+      noSourceAvailable: 'Không có nguồn tài sản nào',
       currency: 'Tiền tệ',
       type: 'Loại',
       noDescription: 'Không có mô tả',
