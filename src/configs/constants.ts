@@ -38,3 +38,5 @@ export const CATEGORY_COLORS: Record<string, string> = {
 export const HIDDEN_BALANCE_PATTERN = '******** ***';
 
 export const AUTH_URL = process.env.APP_AUTH_URL ?? 'http://localhost:8888';
+
+export const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;

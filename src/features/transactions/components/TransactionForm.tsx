@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, MenuItem, SxProps } from '@mui/material';
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { FormAmountInput } from '@/components/form/FormAmountInput';
 import { FormSelect } from '@/components/form/FormSelect';
 import { FormTextField } from '@/components/form/FormTextField';
+import { useTransactionSuggestions } from '@/hooks/api/useTransactions';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { ExpenseBehavior } from '@/types/common';
 import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
@@ -71,6 +72,13 @@ export const TransactionForm = ({
     reset(getDefaultValues(transaction));
   }, [transaction, reset]);
 
+  const category = useWatch({ control, name: 'category' });
+  const { data: amountSuggestions = [] } = useTransactionSuggestions(category);
+  const suggestedAmounts = useMemo(
+    () => amountSuggestions.map(suggestion => suggestion.amount),
+    [amountSuggestions]
+  );
+
   const onSubmit = (values: TransactionFormValues) => {
     onSave({
       type: values.type,
@@ -113,6 +121,7 @@ export const TransactionForm = ({
             control={control}
             label={t('transactions.amount')}
             fullWidth
+            suggestions={suggestedAmounts}
           />
         </Box>
       </Box>

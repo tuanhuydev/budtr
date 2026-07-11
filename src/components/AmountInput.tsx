@@ -1,5 +1,5 @@
 import { TextField, TextFieldProps } from '@mui/material';
-import { ChangeEvent, useState, useEffect, useCallback } from 'react';
+import { ChangeEvent, useId, useState, useEffect, useCallback } from 'react';
 
 /**
  * Formats a numeric string by removing leading zeros and adding commas as thousand separators.
@@ -24,8 +24,13 @@ function sanitize(val: string) {
   return val.replace(/[^0-9]/g, '');
 }
 
-export const AmountInput = (props?: TextFieldProps) => {
-  const { value = '', onChange, ...rest } = props || {};
+type AmountInputProps = TextFieldProps & {
+  suggestions?: number[];
+};
+
+export const AmountInput = (props?: AmountInputProps) => {
+  const { value = '', onChange, suggestions, ...rest } = props || {};
+  const datalistId = useId();
 
   const [displayValue, setDisplayValue] = useState<string>(
     formatAmount(String(value))
@@ -56,18 +61,28 @@ export const AmountInput = (props?: TextFieldProps) => {
   }, [value]);
 
   return (
-    <TextField
-      {...rest}
-      onChange={handleChange}
-      placeholder='Amount'
-      value={displayValue}
-      slotProps={{
-        ...props?.slotProps,
-        htmlInput: {
-          inputMode: 'numeric',
-          pattern: '[0-9]*',
-        },
-      }}
-    />
+    <>
+      <TextField
+        {...rest}
+        onChange={handleChange}
+        placeholder='Amount'
+        value={displayValue}
+        slotProps={{
+          ...props?.slotProps,
+          htmlInput: {
+            inputMode: 'numeric',
+            pattern: '[0-9]*',
+            list: suggestions?.length ? datalistId : undefined,
+          },
+        }}
+      />
+      {suggestions?.length ? (
+        <datalist id={datalistId}>
+          {suggestions.map(amount => (
+            <option key={amount} value={formatAmount(String(amount))} />
+          ))}
+        </datalist>
+      ) : null}
+    </>
   );
 };

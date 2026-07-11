@@ -63,6 +63,12 @@ export interface CreateTransactionParams {
   createdAt?: string;
 }
 
+export type TransactionAmountSuggestion = {
+  amount: number;
+  count: number;
+  lastUsedAt: string;
+};
+
 export interface UpdateTransactionParams extends CreateTransactionParams {
   id: string | number;
 }
@@ -161,6 +167,28 @@ export const transactionsApi = {
     if (!response.ok) {
       throw new Error('Failed to delete transaction');
     }
+  },
+
+  fetchSuggestions: async (
+    apiClient: ApiClient,
+    category?: string
+  ): Promise<TransactionAmountSuggestion[]> => {
+    const url = `${AUTH_URL}/transactions/suggestions${
+      category ? `?category=${encodeURIComponent(category)}` : ''
+    }`;
+
+    const response = await apiClient.request(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch transaction suggestions');
+    }
+
+    return response.json();
   },
 };
 

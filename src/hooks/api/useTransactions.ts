@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { ONE_WEEK_MS } from '../../configs/constants';
 import {
   transactionsApi,
   FetchTransactionsParams,
@@ -12,6 +13,7 @@ import { useShellService } from '../useShellService';
 import { STATS_QUERY_KEY } from './useStats';
 
 export const TRANSACTIONS_QUERY_KEY = 'transactions';
+export const TRANSACTION_SUGGESTIONS_QUERY_KEY = 'transaction-suggestions';
 
 export const useTransactions = (params?: FetchTransactionsParams) => {
   const apiClient = useShellService<ApiClient>('apiClient');
@@ -59,6 +61,23 @@ export const useUpdateTransaction = () => {
       queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
     },
+  });
+};
+
+/**
+ * Suggests previously used amounts for the amount input. Cached for a week
+ * (react-query staleTime/gcTime) since a user's spending habits don't
+ * change amount-to-amount, so we don't want to refetch on every keystroke.
+ */
+export const useTransactionSuggestions = (category?: string) => {
+  const apiClient = useShellService<ApiClient>('apiClient');
+
+  return useQuery({
+    queryKey: [TRANSACTION_SUGGESTIONS_QUERY_KEY, category],
+    queryFn: () => transactionsApi.fetchSuggestions(apiClient!, category),
+    enabled: !!apiClient,
+    staleTime: ONE_WEEK_MS,
+    gcTime: ONE_WEEK_MS,
   });
 };
 

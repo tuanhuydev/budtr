@@ -16,6 +16,7 @@ type FormAmountInputProps<T extends FieldValues> = Omit<
   name: Path<T>;
   control: Control<T>;
   rules?: RegisterOptions<T, Path<T>>;
+  suggestions?: number[];
 };
 
 export const FormAmountInput = <T extends FieldValues>({
@@ -23,6 +24,7 @@ export const FormAmountInput = <T extends FieldValues>({
   control,
   rules,
   helperText,
+  suggestions,
   ...rest
 }: FormAmountInputProps<T>) => (
   <Controller
@@ -37,6 +39,7 @@ export const FormAmountInput = <T extends FieldValues>({
         onBlur={field.onBlur}
         error={!!fieldState.error}
         helperText={fieldState.error?.message ?? helperText}
+        suggestions={suggestions}
       />
     )}
   />
