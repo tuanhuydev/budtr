@@ -100,7 +100,7 @@ export const TransactionTable = ({
   );
 
   return (
-    <Box sx={{ flex: 1, minHeight: 0 }}>
+    <Box sx={{ flex: 1, minHeight: { xs: 300, md: 0 } }}>
       <DataGrid
         rows={transactions}
         columns={columns}
