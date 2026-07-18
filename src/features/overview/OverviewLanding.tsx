@@ -2,7 +2,7 @@ import { Box, SxProps, CircularProgress } from '@mui/material';
 import { startOfDay, endOfDay, addDays } from 'date-fns';
 import { useState, useEffect } from 'react';
 
-import { useBudgets } from '../../hooks/api/useBudgets';
+import { useAssets } from '../../hooks/api/useAssets';
 import { useTransactions } from '../../hooks/api/useTransactions';
 
 import { CurrentWeekTransactions } from './components/CurrentWeekTransactions';
@@ -33,11 +33,11 @@ export const OverviewLanding = () => {
       endDate: endOfDay(today),
     });
 
-  const { data: budgets = [], isLoading: budgetsLoading } = useBudgets();
+  const { data: assets = [], isLoading: assetsLoading } = useAssets();
 
   const transactions = dailyTransactions?.transactions ?? [];
 
-  if (dailyTransactionsLoading || budgetsLoading) {
+  if (dailyTransactionsLoading || assetsLoading) {
     return (
       <Box sx={LoadingContainerSx}>
         <CircularProgress />
@@ -47,7 +47,7 @@ export const OverviewLanding = () => {
 
   return (
     <Box sx={RootContainerSx}>
-      <DailySpendContainer transactions={transactions} budgets={budgets} />
+      <DailySpendContainer transactions={transactions} assets={assets} />
       <MoneyMix today={today} />
       <WeeklyComparison />
       <CurrentWeekTransactions />

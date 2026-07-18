@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, MenuItem, SxProps } from '@mui/material';
-import { useEffect, useMemo } from 'react';
+import { Box, Button, MenuItem, SxProps, Typography } from '@mui/material';
+import { ReactNode, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -8,6 +8,7 @@ import { FormAmountInput } from '@/components/form/FormAmountInput';
 import { FormSelect } from '@/components/form/FormSelect';
 import { FormTextField } from '@/components/form/FormTextField';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import type { Asset } from '@/types/asset';
 import { ExpenseBehavior } from '@/types/common';
 import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
@@ -44,14 +45,36 @@ const getDefaultValues = (tx?: Partial<Transaction>): TransactionFormValues => {
 
 interface TransactionFormProps {
   transaction?: Partial<Transaction>;
-  budgets: unknown[];
+  assets: Asset[];
   onSave: (data: Partial<Transaction>) => void;
   onCancel: () => void;
 }
 
+const FormField = ({
+  htmlFor,
+  label,
+  children,
+}: {
+  htmlFor: string;
+  label: string;
+  children: ReactNode;
+}) => (
+  <Box>
+    <Typography
+      component='label'
+      htmlFor={htmlFor}
+      variant='caption'
+      sx={fieldLabelSx}
+    >
+      {label}
+    </Typography>
+    {children}
+  </Box>
+);
+
 export const TransactionForm = ({
   transaction,
-  budgets,
+  assets,
   onSave,
   onCancel,
 }: TransactionFormProps) => {
@@ -93,92 +116,112 @@ export const TransactionForm = ({
       onSubmit={handleSubmit(onSubmit)}
       sx={formContainerSx}
     >
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Box sx={{ width: 150 }}>
-          <FormSelect
-            name='type'
-            control={control}
-            label={t('transactions.type')}
-          >
-            {Object.values(ExpenseType).map(type => (
-              <MenuItem key={type} value={type}>
-                {t(`transactions.${type}`)}
-              </MenuItem>
-            ))}
-          </FormSelect>
+      <Box sx={fieldRowSx}>
+        <Box sx={fieldRowItemSx}>
+          <FormField htmlFor='type-field' label={t('transactions.type')}>
+            <FormSelect id='type-field' name='type' control={control} fullWidth>
+              {Object.values(ExpenseType).map(type => (
+                <MenuItem key={type} value={type}>
+                  {t(`transactions.${type}`)}
+                </MenuItem>
+              ))}
+            </FormSelect>
+          </FormField>
         </Box>
-        <Box sx={{ flex: 1 }}>
-          <FormAmountInput
-            name='amount'
-            control={control}
-            label={t('transactions.amount')}
-            fullWidth
-          />
+        <Box sx={fieldRowItemSx}>
+          <FormField htmlFor='amount-field' label={t('transactions.amount')}>
+            <FormAmountInput
+              id='amount-field'
+              name='amount'
+              control={control}
+              fullWidth
+            />
+          </FormField>
         </Box>
       </Box>
 
-      <FormSelect
-        name='category'
-        control={control}
-        label={t('transactions.category')}
-      >
-        {Object.values(ExpenseCategory).map(category => (
-          <MenuItem key={category} value={category}>
-            {t(`categories.${category}`)}
-          </MenuItem>
-        ))}
-      </FormSelect>
+      <FormField htmlFor='category-field' label={t('transactions.category')}>
+        <FormSelect
+          id='category-field'
+          name='category'
+          control={control}
+          fullWidth
+        >
+          {Object.values(ExpenseCategory).map(category => (
+            <MenuItem key={category} value={category}>
+              {t(`categories.${category}`)}
+            </MenuItem>
+          ))}
+        </FormSelect>
+      </FormField>
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <FormSelect
-            name='behavior'
-            control={control}
-            fullWidth
+      <Box sx={fieldRowSx}>
+        <Box sx={fieldRowItemSx}>
+          <FormField
+            htmlFor='behavior-field'
             label={t('transactions.behavior')}
           >
-            {Object.values(ExpenseBehavior).map(behavior => (
-              <MenuItem key={behavior} value={behavior}>
-                {t(`transactions.${behavior}`)}
-              </MenuItem>
-            ))}
-          </FormSelect>
+            <FormSelect
+              id='behavior-field'
+              name='behavior'
+              control={control}
+              fullWidth
+            >
+              {Object.values(ExpenseBehavior).map(behavior => (
+                <MenuItem key={behavior} value={behavior}>
+                  {t(`transactions.${behavior}`)}
+                </MenuItem>
+              ))}
+            </FormSelect>
+          </FormField>
         </Box>
-        <Box sx={{ flex: 1 }}>
-          <FormSelect
-            name='source'
-            control={control}
-            fullWidth
-            label={t('transactions.source')}
-            disabled={budgets?.length <= 0}
-          >
-            <MenuItem value=''>
-              {budgets?.length <= 0
-                ? t('overview.noBudgetsAvailable')
-                : t('transactions.source')}
-            </MenuItem>
-          </FormSelect>
+        <Box sx={fieldRowItemSx}>
+          <FormField htmlFor='source-field' label={t('transactions.source')}>
+            <FormSelect
+              id='source-field'
+              name='source'
+              control={control}
+              fullWidth
+              disabled={assets?.length <= 0}
+            >
+              <MenuItem value=''>
+                {assets?.length <= 0
+                  ? t('overview.noSourcesAvailable')
+                  : t('overview.selectSource')}
+              </MenuItem>
+              {assets.map(asset => (
+                <MenuItem key={asset.id} value={asset.id}>
+                  {asset.name}
+                </MenuItem>
+              ))}
+            </FormSelect>
+          </FormField>
         </Box>
       </Box>
 
-      <FormTextField
-        name='createdAt'
-        control={control}
-        label={t('transactions.date')}
-        type='date'
-        fullWidth
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
+      <FormField htmlFor='date-field' label={t('transactions.date')}>
+        <FormTextField
+          id='date-field'
+          name='createdAt'
+          control={control}
+          type='date'
+          fullWidth
+        />
+      </FormField>
 
-      <FormTextField
-        name='description'
-        control={control}
+      <FormField
+        htmlFor='description-field'
         label={t('transactions.description')}
-        placeholder={t('transactions.description')}
-        multiline
-        rows={3}
-        fullWidth
-      />
+      >
+        <FormTextField
+          id='description-field'
+          name='description'
+          control={control}
+          multiline
+          rows={3}
+          fullWidth
+        />
+      </FormField>
 
       <Box sx={actionButtonsContainerSx}>
         <Button type='button' onClick={onCancel} variant='text' color='primary'>
@@ -197,6 +240,24 @@ const formContainerSx: SxProps = {
   flexDirection: 'column',
   gap: 2,
   mt: 2,
+};
+
+const fieldRowSx: SxProps = {
+  display: 'flex',
+  flexDirection: { xs: 'column', sm: 'row' },
+  gap: 2,
+};
+
+const fieldRowItemSx: SxProps = {
+  flex: 1,
+  minWidth: 0,
+};
+
+const fieldLabelSx: SxProps = {
+  display: 'block',
+  mb: 0.5,
+  fontWeight: 500,
+  color: 'text.secondary',
 };
 
 const actionButtonsContainerSx: SxProps = {
