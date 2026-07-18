@@ -14,7 +14,7 @@ type FormSelectProps<T extends FieldValues> = Omit<
 > & {
   name: Path<T>;
   control: Control<T>;
-  label: string;
+  label?: string;
   children: ReactNode;
   rules?: RegisterOptions<T, Path<T>>;
 };

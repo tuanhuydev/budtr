@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import type { Asset } from '@/types/asset';
 import type { Transaction } from '@/types/transaction';
 
 import { TransactionForm } from './TransactionForm';
@@ -8,7 +9,7 @@ import { TransactionForm } from './TransactionForm';
 interface TransactionFormDialogProps {
   open: boolean;
   transaction?: Partial<Transaction> | null;
-  budgets: unknown[];
+  assets: Asset[];
   onSave: (data: Partial<Transaction>) => void;
   onClose: () => void;
 }
@@ -16,7 +17,7 @@ interface TransactionFormDialogProps {
 export const TransactionFormDialog = ({
   open,
   transaction,
-  budgets,
+  assets,
   onSave,
   onClose,
 }: TransactionFormDialogProps) => {
@@ -32,7 +33,7 @@ export const TransactionFormDialog = ({
       <DialogContent>
         <TransactionForm
           transaction={transaction ?? undefined}
-          budgets={budgets}
+          assets={assets}
           onSave={onSave}
           onCancel={onClose}
         />

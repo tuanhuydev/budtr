@@ -3,12 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   transactionsApi,
   FetchTransactionsParams,
+  FetchTransactionSuggestionsParams,
   CreateTransactionParams,
   UpdateTransactionParams,
 } from '../../services/api';
 import type { ApiClient } from '../../types/shell';
 import { useShellService } from '../useShellService';
 
+import { ASSETS_QUERY_KEY } from './useAssets';
 import { STATS_QUERY_KEY } from './useStats';
 
 export const TRANSACTIONS_QUERY_KEY = 'transactions';
@@ -44,6 +46,7 @@ export const useCreateTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ASSETS_QUERY_KEY] });
     },
   });
 };
@@ -58,7 +61,20 @@ export const useUpdateTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ASSETS_QUERY_KEY] });
     },
+  });
+};
+
+export const useTransactionSuggestions = (
+  params: FetchTransactionSuggestionsParams
+) => {
+  const apiClient = useShellService<ApiClient>('apiClient');
+
+  return useQuery({
+    queryKey: [TRANSACTIONS_QUERY_KEY, 'suggestions', params],
+    queryFn: () => transactionsApi.fetchSuggestions(apiClient!, params),
+    enabled: !!apiClient && params.amount > 0,
   });
 };
 
@@ -72,6 +88,7 @@ export const useDeleteTransaction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [TRANSACTIONS_QUERY_KEY] });
       queryClient.invalidateQueries({ queryKey: [STATS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [ASSETS_QUERY_KEY] });
     },
   });
 };

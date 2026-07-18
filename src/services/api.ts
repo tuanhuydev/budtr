@@ -67,6 +67,20 @@ export interface UpdateTransactionParams extends CreateTransactionParams {
   id: string | number;
 }
 
+export type TransactionComboSuggestion = {
+  category: string;
+  behavior: string;
+  description?: string;
+  count: number;
+  lastUsedAt: string;
+};
+
+export interface FetchTransactionSuggestionsParams {
+  amount: number;
+  type?: string;
+  limit?: number;
+}
+
 export interface CreateAssetParams {
   name: string;
   type: string;
@@ -161,6 +175,37 @@ export const transactionsApi = {
     if (!response.ok) {
       throw new Error('Failed to delete transaction');
     }
+  },
+
+  fetchSuggestions: async (
+    apiClient: ApiClient,
+    params: FetchTransactionSuggestionsParams
+  ): Promise<TransactionComboSuggestion[]> => {
+    const urlParams = new URLSearchParams();
+    urlParams.append('amount', params.amount.toString());
+    if (params.type) {
+      urlParams.append('type', params.type);
+    }
+    if (params.limit !== undefined) {
+      urlParams.append('limit', params.limit.toString());
+    }
+
+    const url = `${AUTH_URL}/transactions/suggestions${
+      urlParams.toString() ? `?${urlParams.toString()}` : ''
+    }`;
+
+    const response = await apiClient.request(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch transaction suggestions');
+    }
+
+    return response.json();
   },
 };
 

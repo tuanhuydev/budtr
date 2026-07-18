@@ -1,20 +1,32 @@
 import {
   Box,
   Button,
+  List,
+  ListItemButton,
+  ListItemText,
   MenuItem,
+  Paper,
   Select,
   SelectChangeEvent,
   SxProps,
   Typography,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { AmountInput } from '@/components/AmountInput';
-import { categoryOptions, transactionOptions } from '@/configs/constants';
+import {
+  CATEGORY_COLORS,
+  categoryOptions,
+  transactionOptions,
+} from '@/configs/constants';
 import { CreateTransactionDTO } from '@/features/transactions/dto/CreateTransactionDTO';
-import { useCreateTransaction } from '@/hooks/api/useTransactions';
+import {
+  useCreateTransaction,
+  useTransactionSuggestions,
+} from '@/hooks/api/useTransactions';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import { Asset } from '@/types/asset';
 import {
   DropdownOption,
   ExpenseBehavior,
@@ -33,20 +45,46 @@ const DEFAULT_FORM_VALUES: CreateTransactionDTO = {
   behavior: ExpenseBehavior.FIXED,
 };
 
+const SUGGESTION_DEBOUNCE_MS = 400;
+
 interface DailySpendContainerProps {
   transactions: Transaction[];
-  budgets: unknown[];
+  assets: Asset[];
 }
 
 export const DailySpendContainer = ({
   transactions,
-  budgets,
+  assets,
 }: DailySpendContainerProps) => {
   const { t } = useBudtrTranslation();
   const createTransactionMutation = useCreateTransaction();
 
   const [formData, setFormData] =
     useState<CreateTransactionDTO>(DEFAULT_FORM_VALUES);
+  const [debouncedAmount, setDebouncedAmount] = useState(0);
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(
+      () => setDebouncedAmount(formData.amount),
+      SUGGESTION_DEBOUNCE_MS
+    );
+    return () => clearTimeout(id);
+  }, [formData.amount]);
+
+  useEffect(() => {
+    setSuggestionsDismissed(false);
+  }, [debouncedAmount]);
+
+  const { data: comboSuggestions = [] } = useTransactionSuggestions({
+    amount: debouncedAmount,
+    type: formData.type,
+  });
+
+  const showSuggestions =
+    !suggestionsDismissed &&
+    formData.amount === debouncedAmount &&
+    comboSuggestions.length > 0;
 
   const handleFieldChange =
     (field: keyof CreateTransactionDTO) =>
@@ -56,6 +94,15 @@ export const DailySpendContainer = ({
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, amount: Number(event.target.value) }));
+  };
+
+  const handleSuggestionSelect = (category: string, behavior: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category: category as ExpenseCategory,
+      behavior: behavior as ExpenseBehavior,
+    }));
+    setSuggestionsDismissed(true);
   };
 
   const handleSave = async () => {
@@ -114,14 +161,19 @@ export const DailySpendContainer = ({
             size='small'
             value={formData.source}
             onChange={handleFieldChange('source')}
-            disabled={budgets?.length <= 0}
+            disabled={assets?.length <= 0}
             displayEmpty
           >
             <MenuItem value=''>
-              {budgets?.length <= 0
-                ? t('overview.noBudgetsAvailable')
-                : t('overview.selectBudget')}
+              {assets?.length <= 0
+                ? t('overview.noSourcesAvailable')
+                : t('overview.selectSource')}
             </MenuItem>
+            {assets.map(asset => (
+              <MenuItem value={asset.id} key={asset.id}>
+                {asset.name}
+              </MenuItem>
+            ))}
           </Select>
           <Select
             sx={{ width: 200 }}
@@ -136,20 +188,81 @@ export const DailySpendContainer = ({
             ))}
           </Select>
         </Box>
-        <Box gap={1} display='flex'>
-          <AmountInput
-            value={formData.amount}
-            onChange={handleAmountChange}
-            sx={{ flex: 1 }}
-          />
-          <Button
-            onClick={handleSave}
-            disabled={
-              createTransactionMutation.isPending || formData.amount <= 0
-            }
-          >
-            {t('common.save')}
-          </Button>
+        <Box sx={AmountFieldContainerSx}>
+          <Box gap={1} display='flex'>
+            <AmountInput
+              value={formData.amount}
+              onChange={handleAmountChange}
+              sx={{ flex: 1 }}
+            />
+            <Button
+              onClick={handleSave}
+              disabled={
+                createTransactionMutation.isPending || formData.amount <= 0
+              }
+            >
+              {t('common.save')}
+            </Button>
+          </Box>
+          {showSuggestions && (
+            <Paper sx={SuggestionsDropdownSx} elevation={3}>
+              <List dense disablePadding>
+                {comboSuggestions.map(suggestion => {
+                  const formattedAmount = formatTransactionAmount(
+                    debouncedAmount,
+                    formData.type,
+                    formData.currency
+                  );
+                  return (
+                    <ListItemButton
+                      key={`${suggestion.category}-${suggestion.behavior}`}
+                      onClick={() =>
+                        handleSuggestionSelect(
+                          suggestion.category,
+                          suggestion.behavior
+                        )
+                      }
+                      sx={SuggestionItemSx}
+                    >
+                      <Box
+                        sx={{
+                          ...CategoryDotSx,
+                          bgcolor:
+                            CATEGORY_COLORS[suggestion.category] ??
+                            CATEGORY_COLORS.OTHER,
+                        }}
+                      />
+                      <ListItemText
+                        sx={SuggestionTextSx}
+                        primary={`${t(`categories.${suggestion.category}`)} · ${t(`transactions.${suggestion.behavior}`)}`}
+                        secondary={suggestion.description || undefined}
+                        slotProps={{
+                          primary: { variant: 'body2', fontWeight: 600 },
+                          secondary: {
+                            variant: 'caption',
+                            sx: TruncatedTextSx,
+                          },
+                        }}
+                      />
+                      <Typography
+                        variant='body2'
+                        sx={{
+                          fontWeight: 700,
+                          whiteSpace: 'nowrap',
+                          color:
+                            formattedAmount.color === 'green'
+                              ? 'success.main'
+                              : 'error.main',
+                        }}
+                      >
+                        {formattedAmount.displayText}
+                      </Typography>
+                    </ListItemButton>
+                  );
+                })}
+              </List>
+            </Paper>
+          )}
         </Box>
       </Box>
       <Box sx={TransactionsContainerSx}>
@@ -200,6 +313,46 @@ export const DailySpendContainer = ({
 };
 
 // Styles
+const AmountFieldContainerSx: SxProps = {
+  position: 'relative',
+};
+
+const SuggestionsDropdownSx: SxProps = {
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  right: 0,
+  mt: 0.5,
+  zIndex: 10,
+  maxHeight: 240,
+  overflowY: 'auto',
+};
+
+const SuggestionItemSx: SxProps = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+};
+
+const CategoryDotSx: SxProps = {
+  width: 10,
+  height: 10,
+  borderRadius: '50%',
+  flexShrink: 0,
+};
+
+const SuggestionTextSx: SxProps = {
+  flex: 1,
+  minWidth: 0,
+  mr: 1,
+};
+
+const TruncatedTextSx: SxProps = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
 const TitleSx: SxProps = {
   fontWeight: 600,
   mb: 1,
