@@ -323,6 +323,16 @@ function getTzOffset(): string {
   return `${sign}${hh}:${mm}`;
 }
 
+// mfex-api's GET /stats response keys are camelCase; ChartName stays
+// snake_case since it also doubles as the `?chart=` query param value.
+const CHART_RESPONSE_KEY: Record<ChartName, string> = {
+  budget_vs_actual: 'budgetVsActual',
+  spending_trends: 'spendingTrends',
+  category_breakdown: 'categoryBreakdown',
+  monthly_comparison: 'monthlyComparison',
+  savings_progress: 'savingsProgress',
+};
+
 async function fetchChart<T>(
   apiClient: ApiClient,
   name: ChartName
@@ -340,7 +350,7 @@ async function fetchChart<T>(
   }
 
   const json = await response.json();
-  const result = json[name];
+  const result = json[CHART_RESPONSE_KEY[name]];
   if (result === undefined || result === null) {
     throw new Error(`Chart data missing in response: ${name}`);
   }
