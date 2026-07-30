@@ -96,11 +96,16 @@ export const DailySpendContainer = ({
     setFormData(prev => ({ ...prev, amount: Number(event.target.value) }));
   };
 
-  const handleSuggestionSelect = (category: string, behavior: string) => {
+  const handleSuggestionSelect = (
+    category: string,
+    behavior: string,
+    description?: string
+  ) => {
     setFormData(prev => ({
       ...prev,
       category: category as ExpenseCategory,
       behavior: behavior as ExpenseBehavior,
+      description: description || prev.description,
     }));
     setSuggestionsDismissed(true);
   };
@@ -219,7 +224,8 @@ export const DailySpendContainer = ({
                       onClick={() =>
                         handleSuggestionSelect(
                           suggestion.category,
-                          suggestion.behavior
+                          suggestion.behavior,
+                          suggestion.description
                         )
                       }
                       sx={SuggestionItemSx}
