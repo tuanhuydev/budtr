@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 
 import { useSavingsProgress } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import { formatChartValue } from '@/utils/transactionFormatter';
 
 import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { ChartSkeleton } from './ChartSkeleton';
@@ -83,16 +84,7 @@ const SavingsProgressInner = () => {
       <BarChart
         xAxis={[{ scaleType: 'band', data: xLabels }]}
         borderRadius={4}
-        yAxis={[
-          {
-            valueFormatter: (v: number) => {
-              const abs = Math.abs(v);
-              if (abs >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-              if (abs >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-              return String(v);
-            },
-          },
-        ]}
+        yAxis={[{ valueFormatter: formatChartValue }]}
         series={series}
         height={250}
         margin={{ left: 55, right: 20, top: 10, bottom: 10 }}

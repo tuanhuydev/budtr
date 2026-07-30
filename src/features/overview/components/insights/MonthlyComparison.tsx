@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { CATEGORY_COLORS } from '@/configs/constants';
 import { useMonthlyComparison } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
+import { formatChartValue } from '@/utils/transactionFormatter';
 
 import { ChartErrorBoundary } from './ChartErrorBoundary';
 import { ChartSkeleton } from './ChartSkeleton';
@@ -28,6 +29,7 @@ const MonthlyComparisonInner = () => {
     });
 
     const chartSeries = data.categories.map(cat => ({
+      id: cat,
       label: t(`categories.${cat}`),
       data: pivoted.map(p => p[cat] ?? 0),
       color: CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.OTHER,
@@ -61,10 +63,11 @@ const MonthlyComparisonInner = () => {
       </Typography>
       <BarChart
         xAxis={[{ scaleType: 'band', data: xLabels }]}
+        yAxis={[{ valueFormatter: formatChartValue }]}
         series={series}
         borderRadius={4}
         height={250}
-        margin={{ left: 50, right: 20, top: 10, bottom: 10 }}
+        margin={{ left: 56, right: 20, top: 10, bottom: 10 }}
         sx={{ width: '100%' }}
         slotProps={{
           legend: {
