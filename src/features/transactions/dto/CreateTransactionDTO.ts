@@ -7,5 +7,6 @@ export type CreateTransactionDTO = {
   type: ExpenseType;
   category: ExpenseCategory;
   behavior: ExpenseBehavior;
+  description?: string;
   createdAt?: string;
 };
