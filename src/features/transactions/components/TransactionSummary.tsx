@@ -23,7 +23,7 @@ export const TransactionSummary = ({
     for (const tx of transactions) {
       if (tx.type === ExpenseType.INCOME) {
         income += tx.amount;
-      } else {
+      } else if (tx.type === ExpenseType.EXPENSE) {
         expense += tx.amount;
       }
     }

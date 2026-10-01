@@ -1,9 +1,11 @@
 export enum ExpenseType {
   INCOME = 'INCOME',
   EXPENSE = 'EXPENSE',
+  TRANSFER = 'TRANSFER',
 }
 
 export enum ExpenseCategory {
+  NONE = 'NONE',
   FOOD = 'FOOD',
   TRANSPORTATION = 'TRANSPORTATION',
   ENTERTAINMENT = 'ENTERTAINMENT',

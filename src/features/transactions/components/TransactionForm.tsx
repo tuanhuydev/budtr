@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, MenuItem, SxProps, Typography } from '@mui/material';
 import { ReactNode, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
 import { FormAmountInput } from '@/components/form/FormAmountInput';
@@ -12,21 +12,57 @@ import type { Asset } from '@/types/asset';
 import { ExpenseBehavior } from '@/types/common';
 import { Transaction, ExpenseCategory, ExpenseType } from '@/types/transaction';
 
-const buildSchema = (msgs: { amountRequired: string }) =>
-  z.object({
-    type: z.enum(ExpenseType),
-    amount: z
-      .string()
-      .refine(
-        v => !Number.isNaN(Number(v)) && Number(v) > 0,
-        msgs.amountRequired
-      ),
-    category: z.enum(ExpenseCategory),
-    behavior: z.enum(ExpenseBehavior),
-    source: z.string(),
-    createdAt: z.string().min(1),
-    description: z.string(),
-  });
+const DEFAULT_CURRENCY = 'VND';
+
+const assetCurrency = (asset?: Asset) => asset?.currency ?? DEFAULT_CURRENCY;
+
+const buildSchema = (msgs: {
+  amountRequired: string;
+  sourceRequired: string;
+  targetRequired: string;
+  sameAssetError: string;
+}) =>
+  z
+    .object({
+      type: z.enum(ExpenseType),
+      amount: z
+        .string()
+        .refine(
+          v => !Number.isNaN(Number(v)) && Number(v) > 0,
+          msgs.amountRequired
+        ),
+      category: z.enum(ExpenseCategory),
+      behavior: z.enum(ExpenseBehavior),
+      source: z.string(),
+      target: z.string(),
+      createdAt: z.string().min(1),
+      description: z.string(),
+    })
+    .superRefine((values, ctx) => {
+      if (values.type !== ExpenseType.TRANSFER) {
+        return;
+      }
+      if (!values.source) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['source'],
+          message: msgs.sourceRequired,
+        });
+      }
+      if (!values.target) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['target'],
+          message: msgs.targetRequired,
+        });
+      } else if (values.target === values.source) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['target'],
+          message: msgs.sameAssetError,
+        });
+      }
+    });
 
 type TransactionFormValues = z.infer<ReturnType<typeof buildSchema>>;
 
@@ -38,6 +74,7 @@ const getDefaultValues = (tx?: Partial<Transaction>): TransactionFormValues => {
     category: tx?.category ?? ExpenseCategory.FOOD,
     behavior: tx?.behavior ?? ExpenseBehavior.FIXED,
     source: tx?.source ?? '',
+    target: tx?.target ?? '',
     description: tx?.description ?? '',
     createdAt: tx?.createdAt ? tx.createdAt.split('T')[0] : today,
   };
@@ -81,20 +118,69 @@ export const TransactionForm = ({
   const { t } = useBudtrTranslation();
 
   const schema = useMemo(
-    () => buildSchema({ amountRequired: t('transactions.amountRequired') }),
+    () =>
+      buildSchema({
+        amountRequired: t('transactions.amountRequired'),
+        sourceRequired: t('transactions.sourceRequired'),
+        targetRequired: t('transactions.targetRequired'),
+        sameAssetError: t('transactions.sameAssetError'),
+      }),
     [t]
   );
 
-  const { control, handleSubmit, reset } = useForm<TransactionFormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: getDefaultValues(transaction),
+  const { control, handleSubmit, reset, setValue } =
+    useForm<TransactionFormValues>({
+      resolver: zodResolver(schema),
+      defaultValues: getDefaultValues(transaction),
+    });
+
+  const [type, source, target] = useWatch({
+    control,
+    name: ['type', 'source', 'target'],
   });
+  const isTransfer = type === ExpenseType.TRANSFER;
+  const sourceAsset = assets.find(asset => asset.id === source);
+
+  // Without conversion, money can only move between assets of one currency.
+  const targetOptions = useMemo(
+    () =>
+      assets.filter(
+        asset =>
+          asset.id !== source &&
+          (!sourceAsset || assetCurrency(asset) === assetCurrency(sourceAsset))
+      ),
+    [assets, source, sourceAsset]
+  );
+
+  // Picking a different source can make the chosen target ineligible.
+  useEffect(() => {
+    if (target && !targetOptions.some(asset => asset.id === target)) {
+      setValue('target', '');
+    }
+  }, [target, targetOptions, setValue]);
 
   useEffect(() => {
     reset(getDefaultValues(transaction));
   }, [transaction, reset]);
 
   const onSubmit = (values: TransactionFormValues) => {
+    if (values.type === ExpenseType.TRANSFER) {
+      onSave({
+        type: values.type,
+        amount: Number(values.amount),
+        category: ExpenseCategory.NONE,
+        behavior: ExpenseBehavior.VARIABLE,
+        source: values.source,
+        target: values.target,
+        description: values.description,
+        currency: assetCurrency(sourceAsset),
+        createdAt: values.createdAt
+          ? new Date(values.createdAt).toISOString()
+          : undefined,
+      });
+      return;
+    }
+
     onSave({
       type: values.type,
       amount: Number(values.amount),
@@ -140,64 +226,130 @@ export const TransactionForm = ({
         </Box>
       </Box>
 
-      <FormField htmlFor='category-field' label={t('transactions.category')}>
-        <FormSelect
-          id='category-field'
-          name='category'
-          control={control}
-          fullWidth
-        >
-          {Object.values(ExpenseCategory).map(category => (
-            <MenuItem key={category} value={category}>
-              {t(`categories.${category}`)}
-            </MenuItem>
-          ))}
-        </FormSelect>
-      </FormField>
-
-      <Box sx={fieldRowSx}>
-        <Box sx={fieldRowItemSx}>
+      {isTransfer ? (
+        <Box sx={fieldRowSx}>
+          <Box sx={fieldRowItemSx}>
+            <FormField
+              htmlFor='transfer-source-field'
+              label={t('transactions.fromAsset')}
+            >
+              <FormSelect
+                id='transfer-source-field'
+                name='source'
+                control={control}
+                fullWidth
+                disabled={assets.length <= 0}
+              >
+                <MenuItem value=''>
+                  {assets.length <= 0
+                    ? t('overview.noSourcesAvailable')
+                    : t('overview.selectSource')}
+                </MenuItem>
+                {assets.map(asset => (
+                  <MenuItem key={asset.id} value={asset.id}>
+                    {asset.name} ({assetCurrency(asset)})
+                  </MenuItem>
+                ))}
+              </FormSelect>
+            </FormField>
+          </Box>
+          <Box sx={fieldRowItemSx}>
+            <FormField
+              htmlFor='transfer-target-field'
+              label={t('transactions.toAsset')}
+            >
+              <FormSelect
+                id='transfer-target-field'
+                name='target'
+                control={control}
+                fullWidth
+                disabled={targetOptions.length <= 0}
+                helperText={t('transactions.sameCurrencyHint')}
+              >
+                <MenuItem value=''>
+                  {targetOptions.length <= 0
+                    ? t('overview.noSourcesAvailable')
+                    : t('transactions.selectTargetAsset')}
+                </MenuItem>
+                {targetOptions.map(asset => (
+                  <MenuItem key={asset.id} value={asset.id}>
+                    {asset.name} ({assetCurrency(asset)})
+                  </MenuItem>
+                ))}
+              </FormSelect>
+            </FormField>
+          </Box>
+        </Box>
+      ) : (
+        <>
           <FormField
-            htmlFor='behavior-field'
-            label={t('transactions.behavior')}
+            htmlFor='category-field'
+            label={t('transactions.category')}
           >
             <FormSelect
-              id='behavior-field'
-              name='behavior'
+              id='category-field'
+              name='category'
               control={control}
               fullWidth
             >
-              {Object.values(ExpenseBehavior).map(behavior => (
-                <MenuItem key={behavior} value={behavior}>
-                  {t(`transactions.${behavior}`)}
-                </MenuItem>
-              ))}
+              {Object.values(ExpenseCategory)
+                .filter(category => category !== ExpenseCategory.NONE)
+                .map(category => (
+                  <MenuItem key={category} value={category}>
+                    {t(`categories.${category}`)}
+                  </MenuItem>
+                ))}
             </FormSelect>
           </FormField>
-        </Box>
-        <Box sx={fieldRowItemSx}>
-          <FormField htmlFor='source-field' label={t('transactions.source')}>
-            <FormSelect
-              id='source-field'
-              name='source'
-              control={control}
-              fullWidth
-              disabled={assets?.length <= 0}
-            >
-              <MenuItem value=''>
-                {assets?.length <= 0
-                  ? t('overview.noSourcesAvailable')
-                  : t('overview.selectSource')}
-              </MenuItem>
-              {assets.map(asset => (
-                <MenuItem key={asset.id} value={asset.id}>
-                  {asset.name}
-                </MenuItem>
-              ))}
-            </FormSelect>
-          </FormField>
-        </Box>
-      </Box>
+
+          <Box sx={fieldRowSx}>
+            <Box sx={fieldRowItemSx}>
+              <FormField
+                htmlFor='behavior-field'
+                label={t('transactions.behavior')}
+              >
+                <FormSelect
+                  id='behavior-field'
+                  name='behavior'
+                  control={control}
+                  fullWidth
+                >
+                  {Object.values(ExpenseBehavior).map(behavior => (
+                    <MenuItem key={behavior} value={behavior}>
+                      {t(`transactions.${behavior}`)}
+                    </MenuItem>
+                  ))}
+                </FormSelect>
+              </FormField>
+            </Box>
+            <Box sx={fieldRowItemSx}>
+              <FormField
+                htmlFor='source-field'
+                label={t('transactions.source')}
+              >
+                <FormSelect
+                  id='source-field'
+                  name='source'
+                  control={control}
+                  fullWidth
+                  disabled={assets?.length <= 0}
+                >
+                  <MenuItem value=''>
+                    {assets?.length <= 0
+                      ? t('overview.noSourcesAvailable')
+                      : t('overview.selectSource')}
+                  </MenuItem>
+                  {assets.map(asset => (
+                    <MenuItem key={asset.id} value={asset.id}>
+                      {asset.name}
+                    </MenuItem>
+                  ))}
+                </FormSelect>
+              </FormField>
+            </Box>
+          </Box>
+        </>
+      )}
 
       <FormField htmlFor='date-field' label={t('transactions.date')}>
         <FormTextField

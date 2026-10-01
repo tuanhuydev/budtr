@@ -2,8 +2,8 @@ import { ExpenseType } from '@/types/common';
 
 export interface FormattedAmount {
   displayText: string;
-  color: 'green' | 'red';
-  sign: '+' | '-';
+  color: 'green' | 'red' | 'grey';
+  sign: '+' | '-' | '';
 }
 
 export const formatChartValue = (value: number): string => {
@@ -25,9 +25,11 @@ export const formatTransactionAmount = (
   type: ExpenseType,
   currency?: string
 ): FormattedAmount => {
+  // A transfer only moves money between assets, so it is neither a gain nor a loss.
+  const isTransfer = type === ExpenseType.TRANSFER;
   const isIncome = type === ExpenseType.INCOME;
-  const sign = isIncome ? '+' : '-';
-  const color = isIncome ? 'green' : 'red';
+  const sign = isTransfer ? '' : isIncome ? '+' : '-';
+  const color = isTransfer ? 'grey' : isIncome ? 'green' : 'red';
   const displayText = currency
     ? `${sign}${amount?.toLocaleString() || 0} ${currency}`
     : `${sign}${amount?.toLocaleString() || 0}`;

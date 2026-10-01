@@ -258,7 +258,9 @@ export const DailySpendContainer = ({
                           color:
                             formattedAmount.color === 'green'
                               ? 'success.main'
-                              : 'error.main',
+                              : formattedAmount.color === 'grey'
+                                ? 'text.secondary'
+                                : 'error.main',
                         }}
                       >
                         {formattedAmount.displayText}
