@@ -1,9 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import {
   transactionsApi,
   FetchTransactionsParams,
   FetchTransactionSuggestionsParams,
+  TRANSACTION_LIST_FILTER_KEYS,
   CreateTransactionParams,
   UpdateTransactionParams,
 } from '../../services/api';
@@ -15,7 +21,15 @@ import { STATS_QUERY_KEY } from './useStats';
 
 export const TRANSACTIONS_QUERY_KEY = 'transactions';
 
-export const useTransactions = (params?: FetchTransactionsParams) => {
+interface UseTransactionsOptions {
+  /** Keep showing the previous result while a new filter set is loading. */
+  keepPreviousData?: boolean;
+}
+
+export const useTransactions = (
+  params?: FetchTransactionsParams,
+  options?: UseTransactionsOptions
+) => {
   const apiClient = useShellService<ApiClient>('apiClient');
 
   // Create a clean params object for query key stability
@@ -26,6 +40,12 @@ export const useTransactions = (params?: FetchTransactionsParams) => {
         ...(params.endDate && { endDate: params.endDate.toISOString() }),
         ...(params.page !== undefined && { page: params.page }),
         ...(params.pageSize !== undefined && { pageSize: params.pageSize }),
+        ...Object.fromEntries(
+          TRANSACTION_LIST_FILTER_KEYS.filter(key => params[key]?.length).map(
+            key => [key, params[key]]
+          )
+        ),
+        ...(params.search?.trim() && { search: params.search.trim() }),
       }
     : undefined;
 
@@ -33,6 +53,7 @@ export const useTransactions = (params?: FetchTransactionsParams) => {
     queryKey: [TRANSACTIONS_QUERY_KEY, cleanParams],
     queryFn: () => transactionsApi.fetchTransactions(apiClient!, params),
     enabled: !!apiClient,
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 };
 
