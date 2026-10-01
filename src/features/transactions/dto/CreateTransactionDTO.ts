@@ -4,6 +4,7 @@ export type CreateTransactionDTO = {
   amount: number;
   currency: string;
   source: string;
+  target?: string;
   type: ExpenseType;
   category: ExpenseCategory;
   behavior: ExpenseBehavior;

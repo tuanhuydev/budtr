@@ -8,6 +8,8 @@ export type Transaction = {
   amount: number;
   currency: string;
   source: string;
+  /** Destination asset ID; only set for TRANSFER. */
+  target?: string;
   description?: string;
   type: ExpenseType;
   behavior: ExpenseBehavior;

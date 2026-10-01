@@ -116,6 +116,7 @@ export const TransactionLanding = () => {
         amount: data.amount || 0,
         currency: data.currency || 'VND',
         source: data.source,
+        target: data.target,
         behavior: data.behavior,
         description: data.description,
         createdAt: data.createdAt,

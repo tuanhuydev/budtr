@@ -59,6 +59,7 @@ export interface CreateTransactionParams {
   currency: string;
   behavior?: ExpenseBehavior;
   source?: string;
+  target?: string;
   description?: string;
   createdAt?: string;
 }
