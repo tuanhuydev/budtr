@@ -1,146 +1,68 @@
-import { Box, SxProps, Typography, List, ListItem, Chip } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { useMemo } from 'react';
+import { Box, List, ListItem, SxProps, Typography } from '@mui/material';
 
-import { CATEGORY_COLORS } from '@/configs/constants';
+import { CategoryChip } from '@/components/ui/CategoryChip';
+import { MoneyText } from '@/components/ui/MoneyText';
+import { WidgetCard } from '@/components/ui/WidgetCard';
+import { tabularNums } from '@/configs/theme';
 import { useStats } from '@/hooks/api/useStats';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
 export const TopTransactions = () => {
   const { t } = useBudtrTranslation();
-  const { data: stats } = useStats();
-
-  const topTransactions = stats?.topTransactions || [];
-
-  const formattedTransactions = useMemo(() => {
-    return topTransactions.map(transaction => ({
-      ...transaction,
-      formattedAmount: formatTransactionAmount(
-        transaction.amount,
-        transaction.type
-      ).displayText,
-      categoryLabel: t(`categories.${transaction.category}`),
-      categoryColor:
-        CATEGORY_COLORS[transaction.category] || CATEGORY_COLORS.OTHER,
-    }));
-  }, [topTransactions, t]);
-
-  if (!topTransactions || topTransactions.length === 0) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t('overview.topTransactions')}
-        </Typography>
-
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noTransactions')}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
+  const { data: stats, isLoading } = useStats();
+  const topTransactions = stats?.topTransactions ?? [];
 
   return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t('overview.topTransactions')}
-      </Typography>
-
-      <List sx={ListSx}>
-        {formattedTransactions.map((transaction, index) => (
-          <ListItem
-            key={transaction.id}
-            sx={{
-              ...ListItemSx,
-              borderBottom:
-                index < formattedTransactions.length - 1
-                  ? `1px solid ${grey[200]}`
-                  : 'none',
-            }}
-          >
-            <Box sx={ListItemContentSx}>
-              <Box sx={DescriptionBoxSx}>
-                <Typography
-                  variant='body2'
-                  sx={{ fontWeight: 500, color: grey[800] }}
-                >
-                  {transaction.description || t('transactions.noDescription')}
-                </Typography>
-                <Chip
-                  label={transaction.categoryLabel}
-                  size='small'
-                  sx={{
-                    backgroundColor: transaction.categoryColor,
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: '20px',
-                  }}
-                />
-              </Box>
-              <Typography
-                variant='body1'
-                sx={{ fontWeight: 'bold', color: grey[900], flexShrink: 0 }}
-              >
-                {transaction.formattedAmount}
-              </Typography>
+    <WidgetCard
+      title={t('overview.topTransactions')}
+      loading={isLoading}
+      empty={
+        topTransactions.length === 0 ? t('overview.noTransactions') : undefined
+      }
+    >
+      <List disablePadding>
+        {topTransactions.map((tx, index) => (
+          <ListItem key={tx.id} sx={ItemSx}>
+            <Typography variant='caption' color='text.secondary' sx={RankSx}>
+              {index + 1}
+            </Typography>
+            <Typography variant='body1' noWrap sx={DescriptionSx}>
+              {tx.description || t('transactions.noDescription')}
+            </Typography>
+            <CategoryChip category={tx.category} />
+            <Box sx={AmountSx}>
+              <MoneyText amount={tx.amount} type={tx.type} />
             </Box>
           </ListItem>
         ))}
       </List>
-    </Box>
+    </WidgetCard>
   );
 };
 
 // Styles
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 400 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '100%',
-};
-
-const ListSx: SxProps = {
-  width: '100%',
-  overflow: 'auto',
-  p: 0,
-};
-
-const ListItemSx: SxProps = {
-  py: 1.5,
+const ItemSx: SxProps = {
+  minHeight: 56,
   px: 0,
+  gap: 1.5,
+  borderTop: '1px solid',
+  borderColor: 'divider',
 };
 
-const ListItemContentSx: SxProps = {
-  width: '100%',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: 1,
+const RankSx: SxProps = {
+  width: 16,
+  flexShrink: 0,
+  ...tabularNums,
 };
 
-const DescriptionBoxSx: SxProps = {
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 1,
+const DescriptionSx: SxProps = {
   flex: 1,
-  minWidth: 0, // Allow text truncation
+  minWidth: 0,
+  fontWeight: 500,
+};
+
+const AmountSx: SxProps = {
+  minWidth: 88,
+  textAlign: 'right',
+  flexShrink: 0,
 };

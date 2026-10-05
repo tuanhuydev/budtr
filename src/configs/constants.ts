@@ -20,19 +20,20 @@ export const categoryOptions: Array<DropdownOption<ExpenseCategory>> = [
   { label: 'Other', value: ExpenseCategory.OTHER },
 ];
 export const CATEGORY_COLORS: Record<string, string> = {
-  NONE: '#CBD5E1',
-  FOOD: '#0088FE',
-  TRANSPORTATION: '#00C49F',
-  ENTERTAINMENT: '#FFBB28',
-  UTILITIES: '#FF8042',
-  HEALTHCARE: '#8884D8',
-  EDUCATION: '#82CA9D',
-  SHOPPING: '#FFC658',
-  TRAVEL: '#FF6B9D',
-  SALARY: '#8DD1E1',
-  BUSINESS: '#D0ED57',
-  INVESTMENT: '#A4DE6C',
-  OTHER: '#9E9E9E',
+  NONE: '#D5DBE0',
+  FOOD: '#3B82A0',
+  TRANSPORTATION: '#6AA89A',
+  UTILITIES: '#D9A441',
+  SHOPPING: '#C8776B',
+  HEALTHCARE: '#8C7BB5',
+  OTHER: '#C5CCD2',
+  // proposals beyond the approved design
+  ENTERTAINMENT: '#E0865A',
+  TRAVEL: '#B8719F',
+  EDUCATION: '#5B7DB1',
+  SALARY: '#7FA66B',
+  BUSINESS: '#8B7E74',
+  INVESTMENT: '#9DB85B',
 };
 
 export const HIDDEN_BALANCE_PATTERN = '******** ***';
