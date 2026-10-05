@@ -336,9 +336,9 @@ const FormColumnSx: SxProps = {
 const ListColumnSx: SxProps = {
   flex: '1 1 260px',
   minWidth: 0,
-  borderTop: { xs: '1px solid', md: 'none' },
-  borderLeft: { md: '1px solid' },
+  borderStyle: 'solid',
   borderColor: 'divider',
+  borderWidth: { xs: '1px 0 0 0', md: '0 0 0 1px' },
   pt: { xs: 3, md: 0 },
   pl: { md: 3 },
   display: 'flex',

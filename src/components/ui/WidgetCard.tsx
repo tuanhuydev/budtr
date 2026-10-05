@@ -94,14 +94,14 @@ const ActionSx: SxProps = {
 };
 
 const FlatSx: SxProps = {
-  p: 3,
+  p: { xs: 2, sm: 3 },
   minWidth: 0,
   width: '100%',
   boxSizing: 'border-box',
 };
 
 const OutlinedSx: SxProps = {
-  p: 3,
+  p: { xs: 2, sm: 3 },
   minWidth: 0,
   width: '100%',
   boxSizing: 'border-box',

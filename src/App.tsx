@@ -97,7 +97,7 @@ export default App;
 const RootSx: SxProps = {
   containerType: 'inline-size',
   bgcolor: 'background.default',
-  p: { xs: '16px 16px 24px', md: '32px 40px 48px' },
+  p: { xs: '12px 12px 20px', sm: '16px 20px 32px', md: '32px 40px 48px' },
   display: 'flex',
   flexDirection: 'column',
   gap: 2,

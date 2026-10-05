@@ -16,6 +16,10 @@ export const neutral = {
 
 export const tabularNums = { fontVariantNumeric: 'tabular-nums' } as const;
 
+// Touch layouts (tablet and phone) get a larger type scale and tap targets.
+const TOUCH = '@media (max-width: 899.95px)';
+const PHONE = '@media (max-width: 599.95px)';
+
 const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
   const isLight = mode === 'light';
   const divider = isLight ? neutral[200] : '#2B3C47';
@@ -61,11 +65,31 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
         fontWeight: 600,
         letterSpacing: '-0.01em',
       },
-      h2: { fontSize: 20, lineHeight: '28px', fontWeight: 600 },
-      h3: { fontSize: 16, lineHeight: '24px', fontWeight: 600 },
-      body1: { fontSize: 14, lineHeight: '20px', fontWeight: 400 },
-      body2: { fontSize: 13, lineHeight: '20px', fontWeight: 400 },
-      caption: { fontSize: 12, lineHeight: '16px', fontWeight: 500 },
+      h2: {
+        fontSize: 20,
+        lineHeight: '28px',
+        fontWeight: 600,
+      },
+      h3: {
+        fontSize: 16,
+        lineHeight: '24px',
+        fontWeight: 600,
+      },
+      body1: {
+        fontSize: 14,
+        lineHeight: '20px',
+        fontWeight: 400,
+      },
+      body2: {
+        fontSize: 13,
+        lineHeight: '20px',
+        fontWeight: 400,
+      },
+      caption: {
+        fontSize: 12,
+        lineHeight: '16px',
+        fontWeight: 500,
+      },
       overline: {
         fontSize: 12,
         lineHeight: '16px',
@@ -75,6 +99,23 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
       },
     },
     components: {
+      // Responsive scale lives here, not in typography: x-charts copies
+      // theme.typography into inline styles, which cannot hold media queries.
+      MuiTypography: {
+        styleOverrides: {
+          root: ({ ownerState }) => {
+            const scale: Record<string, Record<string, unknown>> = {
+              h1: { [PHONE]: { fontSize: 26, lineHeight: '34px' } },
+              h2: { [TOUCH]: { fontSize: 19, lineHeight: '26px' } },
+              h3: { [TOUCH]: { fontSize: 17, lineHeight: '24px' } },
+              body1: { [TOUCH]: { fontSize: 16, lineHeight: '24px' } },
+              body2: { [TOUCH]: { fontSize: 15, lineHeight: '22px' } },
+              caption: { [TOUCH]: { fontSize: 13, lineHeight: '18px' } },
+            };
+            return scale[ownerState.variant as string] ?? {};
+          },
+        },
+      },
       MuiPaper: {
         defaultProps: { elevation: 0 },
         styleOverrides: {
@@ -92,6 +133,7 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
               height: 28,
               fontSize: 12,
               borderRadius: 999,
+              [TOUCH]: { height: 36, fontSize: 14, paddingInline: 4 },
             },
             '&.MuiChip-outlined': {
               borderColor: theme.palette.divider,
@@ -116,6 +158,7 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
           root: ({ theme }) => ({
             minHeight: 44,
             borderRadius: 8,
+            [TOUCH]: { minHeight: 48, fontSize: 16 },
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: theme.palette.divider,
             },
@@ -138,6 +181,7 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
             minHeight: 44,
             borderRadius: 8,
             fontWeight: 500,
+            [TOUCH]: { minHeight: 48, fontSize: 15 },
           },
         },
       },
@@ -160,6 +204,8 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
             fontWeight: 500,
             color: isLight ? neutral[600] : theme.palette.text.secondary,
             gap: 10,
+            [TOUCH]: { fontSize: 16, minHeight: 48 },
+            [PHONE]: { padding: '12px 10px', gap: 6, fontSize: 15 },
             '& .MuiTab-iconWrapper': { marginRight: 0, marginBottom: 0 },
             '&:hover': { color: theme.palette.text.primary },
             '&.Mui-focusVisible': {

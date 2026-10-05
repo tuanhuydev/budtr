@@ -12,6 +12,7 @@ export const chartSx: SxProps<Theme> = theme => ({
   [`& .${axisClasses.tickLabel}`]: {
     fill: theme.palette.text.secondary,
     fontSize: 12,
+    '@media (max-width: 899.95px)': { fontSize: 13 },
   },
   [`& .${axisClasses.bottom} .${axisClasses.line}`]: {
     stroke: theme.palette.divider,

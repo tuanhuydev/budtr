@@ -55,7 +55,7 @@ export const PageTabs = ({
 
 // Styles
 const BarSx: SxProps = {
-  p: '12px 20px 0',
+  p: { xs: '8px 8px 0', sm: '12px 16px 0', md: '12px 20px 0' },
   borderBottom: '1px solid',
   borderColor: 'divider',
 };

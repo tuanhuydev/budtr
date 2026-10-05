@@ -36,7 +36,7 @@ export const BudtrHeader = () => {
 
 // Styles
 const RootSx: SxProps = {
-  p: '28px 32px',
+  p: { xs: '20px 16px', sm: '24px 24px', md: '28px 32px' },
   display: 'flex',
   flexDirection: 'column',
   gap: 3,

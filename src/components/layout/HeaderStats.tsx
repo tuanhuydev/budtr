@@ -30,7 +30,12 @@ const Stat = ({
   children: ReactNode;
 }) => (
   <Box sx={{ minWidth: 0 }}>
-    <Typography variant='overline' color='text.secondary' component='div'>
+    <Typography
+      variant='overline'
+      color='text.secondary'
+      component='div'
+      sx={{ '@media (max-width: 899.95px)': { fontSize: 13 } }}
+    >
       {label}
     </Typography>
     {loading ? (
@@ -158,12 +163,14 @@ const ValueSx: SxProps = {
   lineHeight: '28px',
   fontWeight: 500,
   ...tabularNums,
+  '@media (max-width: 899.95px)': { fontSize: 22, lineHeight: '30px' },
 };
 
 const MutedSx: SxProps = {
   fontSize: 14,
   lineHeight: '20px',
   color: 'text.secondary',
+  '@media (max-width: 899.95px)': { fontSize: 16, lineHeight: '22px' },
 };
 
 const BarSx: SxProps = {
