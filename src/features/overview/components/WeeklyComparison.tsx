@@ -27,7 +27,7 @@ export const WeeklyComparison = () => {
 
   const byDay = useMemo(
     () => ({
-      xLabels: (currentWeek ?? []).map(d => t(`days.${d.day}`)),
+      xLabels: (currentWeek ?? []).map(d => t(`daysShort.${d.day}`)),
       series: [
         {
           id: 'amount',

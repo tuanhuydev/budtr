@@ -68,6 +68,15 @@ const budtrTranslations = {
       periodLabel: 'Period',
       total: 'Total',
     },
+    daysShort: {
+      sunday: 'Sun',
+      monday: 'Mon',
+      tuesday: 'Tue',
+      wednesday: 'Wed',
+      thursday: 'Thu',
+      friday: 'Fri',
+      saturday: 'Sat',
+    },
     days: {
       sunday: 'Sunday',
       monday: 'Monday',
@@ -245,6 +254,15 @@ const budtrTranslations = {
       variableLabel: 'Biến đổi',
       periodLabel: 'Kỳ',
       total: 'Tổng',
+    },
+    daysShort: {
+      sunday: 'CN',
+      monday: 'T2',
+      tuesday: 'T3',
+      wednesday: 'T4',
+      thursday: 'T5',
+      friday: 'T6',
+      saturday: 'T7',
     },
     days: {
       sunday: 'Chủ nhật',
