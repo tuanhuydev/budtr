@@ -102,9 +102,6 @@ export const AssetManagementLanding = () => {
   return (
     <Box sx={containerSx}>
       <Box sx={headerSx}>
-        <Typography component='h2' variant='h6'>
-          {t('assets.title')}
-        </Typography>
         <Button variant='contained' onClick={handleCreateClick}>
           {t('assets.createAsset')}
         </Button>
@@ -151,7 +148,7 @@ export const AssetManagementLanding = () => {
 };
 
 const containerSx = {
-  height: '100%',
+  p: { xs: 2, sm: 3 },
   width: '100%',
   display: 'flex',
   flexDirection: 'column',
@@ -169,7 +166,7 @@ const headerSx = {
   mt: { xs: 2, md: 1 },
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'flex-end',
   gap: 2,
   flexWrap: 'wrap',
 };

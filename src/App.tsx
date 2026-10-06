@@ -1,13 +1,8 @@
-import { Box, SxProps, Tab, Tabs } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import React, {
-  FC,
-  Fragment,
-  PropsWithChildren,
-  SyntheticEvent,
-  useState,
-} from 'react';
+import { Box, Paper, SxProps } from '@mui/material';
+import React, { useState } from 'react';
 
+import { BudtrHeader } from './components/layout/BudtrHeader';
+import { PageTabs } from './components/layout/PageTabs';
 import { TabContainer } from './components/PageContainer';
 import { QueryProvider } from './components/providers/QueryProvider';
 import { ThemeProvider } from './components/providers/ThemeProvider';
@@ -16,71 +11,98 @@ import { OverviewLanding } from './features/overview/OverviewLanding';
 import { TransactionLanding } from './features/transactions/TransactionLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
 
-const TabWrapper: FC<PropsWithChildren> = ({ children }) => {
-  return <Box sx={TabWrapperSx}>{children}</Box>;
+const TAB_STORAGE_KEY = 'budtr:active-tab';
+
+const TAB_IDS = ['overview', 'transactions', 'asset'] as const;
+
+const readStoredTab = () => {
+  try {
+    const stored = Number(window.sessionStorage.getItem(TAB_STORAGE_KEY));
+    return Number.isInteger(stored) && stored >= 0 && stored < TAB_IDS.length
+      ? stored
+      : 0;
+  } catch {
+    return 0;
+  }
 };
 
-const App: React.FC = () => {
+const Content: React.FC = () => {
   const { t } = useBudtrTranslation();
-  const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<number>(readStoredTab);
+  // Panels mount on first visit and stay mounted afterwards.
+  const [visited, setVisited] = useState<Set<number>>(
+    () => new Set([readStoredTab()])
+  );
 
-  const handleChange = (e: SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
+  const handleChange = (next: number) => {
+    setActiveTab(next);
+    setVisited(prev => new Set(prev).add(next));
+    try {
+      window.sessionStorage.setItem(TAB_STORAGE_KEY, String(next));
+    } catch {
+      // storage unavailable: the tab just is not remembered
+    }
   };
 
   const tabs = [
+    { id: 'overview', label: t('tabs.overview'), content: <OverviewLanding /> },
     {
-      labelKey: 'tabs.overview',
-      content: <OverviewLanding />,
-    },
-    {
-      labelKey: 'tabs.transactions',
+      id: 'transactions',
+      label: t('tabs.transactions'),
       content: <TransactionLanding />,
     },
     {
-      labelKey: 'tabs.assetManagement',
+      id: 'asset',
+      label: t('tabs.asset'),
       content: <AssetManagementLanding />,
     },
   ];
 
   return (
-    <QueryProvider>
-      <ThemeProvider>
-        {/* Tab Navigation */}
-        <Tabs value={activeTab} onChange={handleChange} aria-label='budtr-aria'>
-          {tabs.map((tab, index) => (
-            <Tab
-              key={index}
-              label={t(tab.labelKey)}
-              id={`tab-${index}`}
-              aria-controls={`tabpanel-${index}`}
-              sx={{ background: 'background.paper' }}
-            />
-          ))}
-        </Tabs>
-
-        {/* Tab Content */}
-        <Fragment>
-          {tabs.map((tab, index) => (
-            <TabContainer key={index} value={activeTab} index={index}>
-              <TabWrapper>{tab.content}</TabWrapper>
-            </TabContainer>
-          ))}
-        </Fragment>
-      </ThemeProvider>
-    </QueryProvider>
+    <Box sx={RootSx}>
+      <BudtrHeader />
+      <Paper variant='outlined' sx={ContentCardSx}>
+        <PageTabs
+          tabs={tabs}
+          value={activeTab}
+          onChange={handleChange}
+          ariaLabel='budtr-aria'
+        />
+        {tabs.map((tab, index) => (
+          <TabContainer
+            key={tab.id}
+            id={tab.id}
+            value={activeTab}
+            index={index}
+          >
+            {visited.has(index) ? tab.content : null}
+          </TabContainer>
+        ))}
+      </Paper>
+    </Box>
   );
 };
+
+const App: React.FC = () => (
+  <QueryProvider>
+    <ThemeProvider>
+      <Content />
+    </ThemeProvider>
+  </QueryProvider>
+);
 
 export default App;
 
 // Styles
-const TabWrapperSx: SxProps = {
-  bgcolor: grey[50],
-  p: 2,
-  borderRadius: 1,
-  height: 'calc(100vh - 96px)',
-  maxHeight: '-webkit-fill-available',
-  overflow: 'auto',
-  WebkitOverflowScrolling: 'touch',
+const RootSx: SxProps = {
+  containerType: 'inline-size',
+  bgcolor: 'background.default',
+  p: { xs: '12px 12px 20px', sm: '16px 20px 32px', md: '32px 40px 48px' },
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+};
+
+const ContentCardSx: SxProps = {
+  overflow: 'hidden',
 };

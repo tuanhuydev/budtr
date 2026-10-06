@@ -1,178 +1,107 @@
-import { Box, SxProps, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { PieChart } from '@mui/x-charts/PieChart';
+import { Box, LinearProgress, SxProps, Typography } from '@mui/material';
 import { useMemo } from 'react';
 
+import { WidgetCard } from '@/components/ui/WidgetCard';
 import { CATEGORY_COLORS } from '@/configs/constants';
+import { neutral, tabularNums } from '@/configs/theme';
 import { useCategoryBreakdown } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-
-import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { ChartSkeleton } from './ChartSkeleton';
 
 const CategoryBreakdownInner = () => {
   const { t } = useBudtrTranslation();
   const { data, isLoading } = useCategoryBreakdown();
 
-  const pieData = useMemo(() => {
-    if (!data?.items?.length) return [];
-    return data.items.map((item, i) => ({
-      id: i,
-      value: item.amount,
-      label: `${t(`categories.${item.category}`)} ${item.percentage.toFixed(1)}%`,
-      color: CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.OTHER,
-    }));
-  }, [data, t]);
-
-  if (isLoading) return <ChartSkeleton width={{ xs: '100%', md: 400 }} />;
-
-  if (!data || data.total === 0 || !data.items?.length) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t('insights.categoryBreakdown')}
-        </Typography>
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noData')}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
+  const items = useMemo(
+    () => [...(data?.items ?? [])].sort((a, b) => b.amount - a.amount),
+    [data]
+  );
 
   return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t('insights.categoryBreakdown')}
-        {data.month ? (
-          <Typography
-            component='span'
-            variant='caption'
-            sx={{ ml: 1, color: grey[500] }}
-          >
-            {data.month}
-          </Typography>
-        ) : null}
-      </Typography>
-
-      {/* Donut with center-label overlay */}
-      <Box sx={DonutWrapperSx}>
-        <PieChart
-          series={[
-            {
-              data: pieData,
-              innerRadius: 60,
-              outerRadius: 100,
-              paddingAngle: 2,
-              cornerRadius: 3,
-            },
-          ]}
-          height={240}
-          margin={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          sx={{ width: '100%' }}
-          slots={{ legend: () => null }}
-        />
-        {/* Center label */}
-        <Box sx={CenterLabelSx}>
-          <Typography
-            variant='caption'
-            sx={{ color: grey[500], lineHeight: 1 }}
-          >
-            {t('insights.total')}
-          </Typography>
-          <Typography
-            variant='subtitle2'
-            sx={{ fontWeight: 700, color: grey[800] }}
-          >
-            {data.total.toLocaleString()}
-          </Typography>
-        </Box>
+    <WidgetCard
+      title={t('overview.categoryMix')}
+      subtitle={data?.month || undefined}
+      loading={isLoading}
+      empty={!data || !items.length ? t('overview.noData') : undefined}
+    >
+      <Box sx={ListSx}>
+        {items.map(item => {
+          const color = CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.OTHER;
+          return (
+            <Box key={item.category}>
+              <Box sx={RowSx}>
+                <Box sx={NameSx}>
+                  <Box sx={{ ...DotSx, bgcolor: color }} />
+                  <Typography variant='body1'>
+                    {t(`categories.${item.category}`)}
+                  </Typography>
+                </Box>
+                <Typography variant='body1' sx={AmountSx}>
+                  <b>{item.amount.toLocaleString()}</b>
+                  <Box component='span' sx={{ color: 'text.secondary' }}>
+                    {' · '}
+                    {item.percentage.toFixed(1)}%
+                  </Box>
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant='determinate'
+                value={item.percentage}
+                aria-label={t(`categories.${item.category}`)}
+                sx={{
+                  ...BarSx,
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: color,
+                    borderRadius: 4,
+                    minWidth: 8,
+                  },
+                }}
+              />
+            </Box>
+          );
+        })}
       </Box>
-
-      {/* Legend */}
-      <Box sx={LegendSx}>
-        {data.items.map(item => (
-          <Box key={item.category} sx={LegendItemSx}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                bgcolor:
-                  CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.OTHER,
-                flexShrink: 0,
-              }}
-            />
-            <Typography variant='caption' sx={{ color: grey[700] }}>
-              {t(`categories.${item.category}`)} · {item.percentage.toFixed(1)}%
-            </Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
+    </WidgetCard>
   );
 };
 
-export const CategoryBreakdown = () => (
-  <ChartErrorBoundary>
-    <CategoryBreakdownInner />
-  </ChartErrorBoundary>
-);
+export const CategoryBreakdown = () => <CategoryBreakdownInner />;
 
 // Styles
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 400 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
+const ListSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
-  overflow: 'hidden',
+  gap: 2,
 };
 
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
+const RowSx: SxProps = {
   display: 'flex',
-  alignItems: 'center',
   justifyContent: 'space-between',
-};
-
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
   alignItems: 'center',
-  minHeight: 200,
+  gap: 1,
+  mb: 0.75,
 };
 
-const DonutWrapperSx: SxProps = {
-  position: 'relative',
-  width: '100%',
-};
-
-const CenterLabelSx: SxProps = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  textAlign: 'center',
-  pointerEvents: 'none',
-};
-
-const LegendSx: SxProps = {
-  display: 'flex',
-  gap: 0.5,
-  mt: 1,
-  overflow: 'auto',
-  maxHeight: 120,
-  flexWrap: 'wrap',
-};
-
-const LegendItemSx: SxProps = {
+const NameSx: SxProps = {
   display: 'flex',
   alignItems: 'center',
   gap: 1,
+  minWidth: 0,
+};
+
+const DotSx: SxProps = {
+  width: 8,
+  height: 8,
+  borderRadius: '50%',
+  flexShrink: 0,
+};
+
+const AmountSx: SxProps = {
+  whiteSpace: 'nowrap',
+  ...tabularNums,
+};
+
+const BarSx: SxProps = {
+  height: 8,
+  borderRadius: 4,
+  bgcolor: neutral[100],
 };

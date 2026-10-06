@@ -1,160 +1,158 @@
-import { Box, Chip, SxProps, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
+import { Box, Chip, SxProps } from '@mui/material';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { useMemo, useState } from 'react';
 
+import { WidgetCard } from '@/components/ui/WidgetCard';
+import {
+  CHART_HEIGHT,
+  chartSx,
+  fullAmount,
+  moneyYAxisFromZero,
+} from '@/configs/chartTheme';
 import { CATEGORY_COLORS } from '@/configs/constants';
+import { neutral } from '@/configs/theme';
 import { useSpendingTrends } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { formatChartValue } from '@/utils/transactionFormatter';
 
-import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { ChartSkeleton } from './ChartSkeleton';
+const colorOf = (cat: string) => CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.OTHER;
 
 const SpendingTrendsInner = () => {
   const { t } = useBudtrTranslation();
   const { data, isLoading } = useSpendingTrends();
-  const [hiddenCategories, setHiddenCategories] = useState<Set<string>>(
-    new Set()
-  );
+  // Empty selection means "All".
+  const [selected, setSelected] = useState<string[]>([]);
 
-  const { series, xLabels, categories } = useMemo(() => {
-    if (!data || !data.months?.length)
-      return { series: [], xLabels: [], categories: [] };
-
-    const pivoted = data.months.map(month => {
-      const entry: Record<string, number> = { month: 0 };
-      data.data
-        .filter(d => d.month === month)
-        .forEach(d => {
-          entry[d.category] = d.amount;
-        });
-      return entry;
+  const { valuesByCat, xLabels, categories, yMax } = useMemo(() => {
+    if (!data?.months?.length) {
+      return {
+        valuesByCat: {} as Record<string, number[]>,
+        xLabels: [] as string[],
+        categories: [] as string[],
+        yMax: undefined,
+      };
+    }
+    const values: Record<string, number[]> = {};
+    data.categories.forEach(cat => {
+      values[cat] = data.months.map(
+        month =>
+          data.data.find(d => d.month === month && d.category === cat)
+            ?.amount ?? 0
+      );
     });
-
-    const chartSeries = data.categories.map(cat => ({
-      id: cat,
-      label: t(`categories.${cat}`),
-      data: pivoted.map(p =>
-        hiddenCategories.has(cat) ? null : (p[cat] ?? 0)
-      ),
-      color: CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.OTHER,
-      showMark: false,
-    }));
-
+    const max = Math.max(0, ...Object.values(values).flat());
     return {
-      series: chartSeries,
+      valuesByCat: values,
       xLabels: data.months,
       categories: data.categories,
+      yMax: max > 0 ? max : undefined,
     };
-  }, [data, t, hiddenCategories]);
+  }, [data]);
 
-  const toggleCategory = (cat: string) => {
-    setHiddenCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(cat)) {
-        next.delete(cat);
-      } else {
-        next.add(cat);
-      }
-      return next;
-    });
-  };
+  const allActive = selected.length === 0;
+  const visible = allActive
+    ? categories
+    : categories.filter(c => selected.includes(c));
 
-  if (isLoading) return <ChartSkeleton width={{ xs: '100%', md: 560 }} />;
-
-  if (!data || !data.months?.length) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t('insights.spendingTrends')}
-        </Typography>
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noData')}
-          </Typography>
-        </Box>
-      </Box>
+  const toggle = (cat: string) =>
+    setSelected(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     );
-  }
+
+  const caption = allActive
+    ? t('overview.showingAll')
+    : `${t('overview.showing')} ${visible
+        .map(c => t(`categories.${c}`))
+        .join(', ')}`;
+
+  const pills = (
+    <Box role='group' aria-label={t('insights.spendingTrends')} sx={PillsSx}>
+      <Chip
+        component='button'
+        size='small'
+        clickable
+        aria-pressed={allActive}
+        label={t('overview.all')}
+        variant={allActive ? 'filled' : 'outlined'}
+        color={allActive ? 'primary' : 'default'}
+        onClick={() => setSelected([])}
+        sx={
+          allActive
+            ? undefined
+            : { bgcolor: neutral[100], color: neutral[600], border: 0 }
+        }
+      />
+      {categories.map(cat => {
+        const picked = selected.includes(cat);
+        return (
+          <Chip
+            key={cat}
+            component='button'
+            size='small'
+            clickable
+            aria-pressed={picked}
+            label={t(`categories.${cat}`)}
+            variant={picked ? 'filled' : 'outlined'}
+            color={picked ? 'primary' : 'default'}
+            onClick={() => toggle(cat)}
+            icon={
+              <Box
+                sx={{
+                  ...DotSx,
+                  bgcolor: colorOf(cat),
+                  boxShadow: picked ? '0 0 0 2px #fff' : 'none',
+                }}
+              />
+            }
+          />
+        );
+      })}
+    </Box>
+  );
 
   return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t('insights.spendingTrends')}
-      </Typography>
-      <Box sx={LegendRowSx}>
-        {categories.map(cat => {
-          const color = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.OTHER;
-          const isHidden = hiddenCategories.has(cat);
-          return (
-            <Chip
-              key={cat}
-              size='small'
-              clickable
-              onClick={() => toggleCategory(cat)}
-              label={t(`categories.${cat}`)}
-              sx={{
-                borderColor: color,
-                border: '1px solid',
-                bgcolor: isHidden ? 'transparent' : `${color}1f`,
-                color: isHidden ? grey[400] : 'text.primary',
-                textDecoration: isHidden ? 'line-through' : 'none',
-                fontWeight: 500,
-              }}
-            />
-          );
-        })}
-      </Box>
+    <WidgetCard
+      title={t('insights.spendingTrends')}
+      subtitle={data?.months?.length ? caption : undefined}
+      loading={isLoading}
+      empty={!data?.months?.length ? t('overview.noData') : undefined}
+    >
+      {pills}
       <LineChart
-        xAxis={[{ data: xLabels, scaleType: 'band' }]}
-        yAxis={[{ valueFormatter: formatChartValue }]}
-        series={series}
-        height={220}
-        margin={{ left: 56, right: 20, top: 10, bottom: 10 }}
-        sx={{ width: '100%' }}
+        xAxis={[{ scaleType: 'point', data: xLabels }]}
+        yAxis={[{ ...moneyYAxisFromZero, max: yMax }]}
+        series={visible.map(cat => ({
+          id: cat,
+          label: t(`categories.${cat}`),
+          data: valuesByCat[cat],
+          color: colorOf(cat),
+          showMark: false,
+          curve: 'linear',
+          valueFormatter: fullAmount,
+        }))}
+        height={CHART_HEIGHT}
+        grid={{ horizontal: true }}
+        margin={{ right: 24 }}
         hideLegend
+        sx={chartSx}
       />
-    </Box>
+    </WidgetCard>
   );
 };
 
-export const SpendingTrends = () => (
-  <ChartErrorBoundary>
-    <SpendingTrendsInner />
-  </ChartErrorBoundary>
-);
+export const SpendingTrends = () => <SpendingTrendsInner />;
 
 // Styles
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 560 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-};
-
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const LegendRowSx: SxProps = {
+const PillsSx: SxProps = {
   display: 'flex',
   flexWrap: 'wrap',
-  gap: 0.5,
-  mb: 1,
-  maxHeight: 76,
-  overflowY: 'auto',
+  gap: 1,
+  mb: 2,
 };
 
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: 200,
+const DotSx: SxProps = {
+  width: 8,
+  height: 8,
+  borderRadius: '50%',
+  ml: '8px !important',
+  mr: '-2px !important',
 };

@@ -1,139 +1,88 @@
-import { Box, Chip, SxProps, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
+import { Chip } from '@mui/material';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useMemo } from 'react';
 
+import { ChartLegend } from '@/components/ui/ChartLegend';
+import { WidgetCard } from '@/components/ui/WidgetCard';
+import {
+  CHART_HEIGHT,
+  bandXAxis,
+  chartSx,
+  fullAmount,
+  moneyYAxis,
+} from '@/configs/chartTheme';
+import { neutral } from '@/configs/theme';
 import { useSavingsProgress } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { formatChartValue } from '@/utils/transactionFormatter';
-
-import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { ChartSkeleton } from './ChartSkeleton';
-
-const INCOME_COLOR = '#22c55e';
-const EXPENSE_COLOR = '#ef4444';
-const SAVINGS_COLOR = '#3b82f6';
 
 const SavingsProgressInner = () => {
   const { t } = useBudtrTranslation();
   const { data, isLoading } = useSavingsProgress();
 
   const { series, xLabels } = useMemo(() => {
-    if (!data?.data.length) return { series: [], xLabels: [] };
-
-    const months = data.data.map(d => d.month);
-
-    const chartSeries = [
-      {
-        label: t('transactions.INCOME'),
-        data: data.data.map(d => d.income),
-        color: INCOME_COLOR,
-      },
-      {
-        label: t('transactions.EXPENSE'),
-        data: data.data.map(d => d.expenses),
-        color: EXPENSE_COLOR,
-      },
-      {
-        label: t('insights.savings'),
-        data: data.data.map(d => d.savings),
-        color: SAVINGS_COLOR,
-      },
-    ];
-
-    return { series: chartSeries, xLabels: months };
+    if (!data?.data.length) return { series: [], xLabels: [] as string[] };
+    return {
+      xLabels: data.data.map(d => d.month),
+      series: [
+        {
+          id: 'income',
+          label: t('transactions.INCOME'),
+          data: data.data.map(d => d.income),
+          color: '#16A34A',
+        },
+        {
+          id: 'expense',
+          label: t('transactions.EXPENSE'),
+          data: data.data.map(d => d.expenses),
+          color: '#DC2626',
+        },
+        {
+          id: 'savings',
+          label: t('insights.savings'),
+          data: data.data.map(d => d.savings),
+          color: '#2563EB',
+        },
+      ].map(s => ({ ...s, valueFormatter: fullAmount })),
+    };
   }, [data, t]);
 
-  if (isLoading) return <ChartSkeleton width={{ xs: '100%', md: 560 }} />;
-
-  if (!data?.data.length) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t('insights.savingsProgress')}
-        </Typography>
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noData')}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
-
-  const projectedRate = data.projectedSavingsRate;
+  const rate = data?.projectedSavingsRate;
 
   return (
-    <Box sx={ContainerSx}>
-      <Box sx={HeaderRowSx}>
-        <Typography component='h3' sx={TitleSx}>
-          {t('insights.savingsProgress')}
-        </Typography>
-        <Chip
-          size='small'
-          label={`${t('insights.projected')} ${projectedRate.toFixed(1)}%`}
-          sx={{
-            bgcolor: projectedRate >= 0 ? '#dcfce7' : '#fee2e2',
-            color: projectedRate >= 0 ? '#15803d' : '#b91c1c',
-            fontWeight: 600,
-            fontSize: '0.72rem',
-          }}
-        />
-      </Box>
-
+    <WidgetCard
+      title={t('insights.savingsProgress')}
+      loading={isLoading}
+      empty={!data?.data.length ? t('overview.noData') : undefined}
+      action={
+        rate !== undefined ? (
+          <Chip
+            size='small'
+            label={`${t('insights.projected')} ${rate.toFixed(1)}%`}
+            sx={{ bgcolor: neutral[100], color: 'text.primary' }}
+          />
+        ) : undefined
+      }
+    >
       <BarChart
-        xAxis={[{ scaleType: 'band', data: xLabels }]}
-        borderRadius={4}
-        yAxis={[{ valueFormatter: formatChartValue }]}
+        xAxis={[bandXAxis(xLabels)]}
+        yAxis={[moneyYAxis]}
         series={series}
-        height={250}
-        margin={{ left: 55, right: 20, top: 10, bottom: 10 }}
-        sx={{ width: '100%' }}
-        slotProps={{
-          legend: {
-            direction: 'horizontal',
-            position: { vertical: 'bottom', horizontal: 'center' },
-          },
-        }}
+        height={CHART_HEIGHT}
+        borderRadius={4}
+        grid={{ horizontal: true }}
+        hideLegend
+        sx={chartSx}
       />
-    </Box>
+      <ChartLegend
+        items={series.map(s => ({
+          id: s.id,
+          label: s.label,
+          color: s.color,
+          shape: 'square',
+        }))}
+      />
+    </WidgetCard>
   );
 };
 
-export const SavingsProgress = () => (
-  <ChartErrorBoundary>
-    <SavingsProgressInner />
-  </ChartErrorBoundary>
-);
-
-// Styles
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 560 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-};
-
-const HeaderRowSx: SxProps = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  mb: 1,
-};
-
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: 200,
-};
+export const SavingsProgress = () => <SavingsProgressInner />;

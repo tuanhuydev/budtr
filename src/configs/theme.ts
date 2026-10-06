@@ -1,114 +1,239 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, Theme } from '@mui/material/styles';
 
-// Custom primary color palette for budget tracking app
-const primaryColors = {
-  primary: {
-    main: '#2E7D32', // Green for money/finance
-    light: '#4CAF50',
-    dark: '#1B5E20',
-    contrastText: '#FFFFFF',
-  },
-  secondary: {
-    main: '#757575', // Grey
-    light: '#9E9E9E',
-    dark: '#616161',
-    contrastText: '#FFFFFF',
-  },
-  background: {
-    default: '#FAFAFA',
-    paper: '#FFFFFF',
-  },
-  text: {
-    primary: '#212121',
-    secondary: '#757575',
-  },
+// Only theme.ts and chartTheme.ts read these directly. Components use the
+// standard palette keys so exposed widgets work outside Budtr's ThemeProvider.
+export const neutral = {
+  0: '#FFFFFF',
+  50: '#F7F8F9', // page background
+  100: '#EEF0F2', // wash, gridlines, idle fills
+  200: '#E1E5E8', // borders and dividers
+  400: '#8A96A0', // decorative only, fails text contrast
+  500: '#7B8794', // large decorative text only
+  600: '#5F6C77', // muted text, inactive tabs
+  700: '#4F5D68', // secondary text
+  900: '#172733', // primary
 };
 
-export const budtrTheme = createTheme({
-  palette: {
-    mode: 'light',
-    ...primaryColors,
-  },
-  components: {
-    // Only customize Tabs to match your requirements
-    MuiTabs: {
-      styleOverrides: {
-        root: {
-          borderBottom: `1px solid ${primaryColors.primary.light}20`,
-        },
-        indicator: {
-          height: 3,
-          borderRadius: 2,
-        },
-      },
-    },
-    MuiTab: {
-      styleOverrides: {
-        root: {
-          textTransform: 'capitalize',
-          fontWeight: 500,
-          minHeight: 48,
-          '&.Mui-selected': {
-            fontWeight: 700,
-            color: primaryColors.primary.main,
-          },
-          '&:hover': {
-            backgroundColor: `${primaryColors.primary.main}08`,
-          },
-        },
-      },
-    },
-    MuiSelect: {
-      defaultProps: {
-        size: 'small',
-      },
-    },
-    MuiTextField: {
-      defaultProps: {
-        variant: 'outlined',
-        size: 'small',
-      },
-    },
-    MuiButton: {
-      defaultProps: {
-        variant: 'contained',
-        disableElevation: true,
-      },
-      styleOverrides: {
-        root: {
-          textTransform: 'capitalize',
-        },
-      },
-    },
-  },
-});
+export const tabularNums = { fontVariantNumeric: 'tabular-nums' } as const;
 
-// Dark theme variant
-export const budtrDarkTheme = createTheme({
-  ...budtrTheme,
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#4CAF50',
-      light: '#81C784',
-      dark: '#2E7D32',
-      contrastText: '#FFFFFF',
+// Touch layouts (tablet and phone) get a larger type scale and tap targets.
+const TOUCH = '@media (max-width: 899.95px)';
+const PHONE = '@media (max-width: 599.95px)';
+
+const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
+  const isLight = mode === 'light';
+  const divider = isLight ? neutral[200] : '#2B3C47';
+
+  return createTheme({
+    palette: {
+      mode,
+      primary: isLight
+        ? {
+            main: neutral[900],
+            light: '#2B3C47',
+            dark: '#0F1A22',
+            contrastText: '#FFFFFF',
+          }
+        : {
+            main: '#E1E5E8',
+            light: '#FFFFFF',
+            dark: '#C5CCD2',
+            contrastText: neutral[900],
+          },
+      secondary: {
+        main: neutral[600],
+        contrastText: '#FFFFFF',
+      },
+      success: { main: '#16A34A' },
+      error: { main: '#DC2626', dark: '#B91C1C' },
+      info: { main: '#2563EB' },
+      warning: { main: '#D97706' },
+      divider,
+      background: isLight
+        ? { default: neutral[50], paper: neutral[0] }
+        : { default: '#0F1A22', paper: '#172733' },
+      text: isLight
+        ? { primary: neutral[900], secondary: neutral[700] }
+        : { primary: '#FFFFFF', secondary: '#B0BEC5' },
     },
-    secondary: {
-      main: '#9E9E9E', // Grey for dark mode
-      light: '#BDBDBD',
-      dark: '#757575',
-      contrastText: '#000000',
+    shape: { borderRadius: 8 },
+    typography: {
+      fontFamily: '"Roboto","Helvetica","Arial",sans-serif',
+      h1: {
+        fontSize: 28,
+        lineHeight: '36px',
+        fontWeight: 600,
+        letterSpacing: '-0.01em',
+      },
+      h2: {
+        fontSize: 20,
+        lineHeight: '28px',
+        fontWeight: 600,
+      },
+      h3: {
+        fontSize: 16,
+        lineHeight: '24px',
+        fontWeight: 600,
+      },
+      body1: {
+        fontSize: 14,
+        lineHeight: '20px',
+        fontWeight: 400,
+      },
+      body2: {
+        fontSize: 13,
+        lineHeight: '20px',
+        fontWeight: 400,
+      },
+      caption: {
+        fontSize: 12,
+        lineHeight: '16px',
+        fontWeight: 500,
+      },
+      overline: {
+        fontSize: 12,
+        lineHeight: '16px',
+        fontWeight: 500,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+      },
     },
-    background: {
-      default: '#121212',
-      paper: '#1E1E1E',
+    components: {
+      // Responsive scale lives here, not in typography: x-charts copies
+      // theme.typography into inline styles, which cannot hold media queries.
+      MuiTypography: {
+        styleOverrides: {
+          root: ({ ownerState }) => {
+            const scale: Record<string, Record<string, unknown>> = {
+              h1: { [PHONE]: { fontSize: 26, lineHeight: '34px' } },
+              h2: { [TOUCH]: { fontSize: 19, lineHeight: '26px' } },
+              h3: { [TOUCH]: { fontSize: 17, lineHeight: '24px' } },
+              body1: { [TOUCH]: { fontSize: 16, lineHeight: '24px' } },
+              body2: { [TOUCH]: { fontSize: 15, lineHeight: '22px' } },
+              caption: { [TOUCH]: { fontSize: 13, lineHeight: '18px' } },
+            };
+            return scale[ownerState.variant as string] ?? {};
+          },
+        },
+      },
+      MuiPaper: {
+        defaultProps: { elevation: 0 },
+        styleOverrides: {
+          outlined: ({ theme }) => ({
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 12,
+          }),
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            fontWeight: 500,
+            '&.MuiChip-sizeSmall': {
+              height: 28,
+              fontSize: 12,
+              borderRadius: 999,
+              [TOUCH]: { height: 36, fontSize: 14, paddingInline: 4 },
+            },
+            '&.MuiChip-outlined': {
+              borderColor: theme.palette.divider,
+              color: theme.palette.text.secondary,
+            },
+            '&.MuiChip-filledPrimary': {
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+            },
+            '&.MuiChip-filledPrimary:hover': {
+              backgroundColor: theme.palette.primary.light,
+            },
+            '&.Mui-focusVisible': {
+              outline: `2px solid ${theme.palette.primary.main}`,
+              outlineOffset: 2,
+            },
+          }),
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            minHeight: 44,
+            borderRadius: 8,
+            [TOUCH]: { minHeight: 48, fontSize: 16 },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.divider,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.main,
+              borderWidth: 1,
+            },
+          }),
+        },
+      },
+      MuiSelect: { defaultProps: { size: 'small' } },
+      MuiTextField: {
+        defaultProps: { variant: 'outlined', size: 'small' },
+      },
+      MuiButton: {
+        defaultProps: { variant: 'contained', disableElevation: true },
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            minHeight: 44,
+            borderRadius: 8,
+            fontWeight: 500,
+            [TOUCH]: { minHeight: 48, fontSize: 15 },
+          },
+        },
+      },
+      MuiTabs: {
+        styleOverrides: {
+          root: { minHeight: 0 },
+          indicator: { display: 'none' },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            position: 'relative',
+            minHeight: 0,
+            minWidth: 0,
+            padding: '14px 12px',
+            textTransform: 'none',
+            fontSize: 16,
+            lineHeight: '24px',
+            fontWeight: 500,
+            color: isLight ? neutral[600] : theme.palette.text.secondary,
+            gap: 10,
+            [TOUCH]: { fontSize: 16, minHeight: 48 },
+            [PHONE]: { padding: '12px 10px', gap: 6, fontSize: 15 },
+            '& .MuiTab-iconWrapper': { marginRight: 0, marginBottom: 0 },
+            '&:hover': { color: theme.palette.text.primary },
+            '&.Mui-focusVisible': {
+              outline: `2px solid ${theme.palette.primary.main}`,
+              outlineOffset: -2,
+              borderRadius: 4,
+            },
+            '&.Mui-selected': {
+              color: theme.palette.primary.main,
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                left: 12,
+                right: 12,
+                bottom: 0,
+                height: 3,
+                borderRadius: '3px 3px 0 0',
+                backgroundColor: theme.palette.primary.main,
+              },
+            },
+          }),
+        },
+      },
     },
-    text: {
-      primary: '#FFFFFF',
-      secondary: '#B0BEC5',
-    },
-  },
-});
+  });
+};
+
+export const budtrTheme = createBudtrTheme('light');
+export const budtrDarkTheme = createBudtrTheme('dark');
 
 export default budtrTheme;

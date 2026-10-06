@@ -281,7 +281,7 @@ export const TransactionLanding = () => {
 
 // Styles
 const containerSx = {
-  height: '100%',
+  p: { xs: 2, sm: 3 },
   width: '100%',
   display: 'flex',
   flexDirection: 'column',

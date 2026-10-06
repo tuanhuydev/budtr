@@ -11,10 +11,12 @@ import {
   SxProps,
   Typography,
 } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 import { AmountInput } from '@/components/AmountInput';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MoneyText } from '@/components/ui/MoneyText';
+import { WidgetCard } from '@/components/ui/WidgetCard';
 import {
   CATEGORY_COLORS,
   categoryOptions,
@@ -34,7 +36,6 @@ import {
   ExpenseType,
 } from '@/types/common';
 import { Transaction } from '@/types/transaction';
-import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
 const DEFAULT_FORM_VALUES: CreateTransactionDTO = {
   type: ExpenseType.EXPENSE,
@@ -130,197 +131,244 @@ export const DailySpendContainer = ({
     },
   ];
 
-  return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t('overview.dailySpends')}
+  const labelled = (label: string, control: ReactNode) => (
+    <Box sx={FieldSx}>
+      <Typography variant='caption' color='text.secondary'>
+        {label}
       </Typography>
-      <Box flexDirection='column' gap={1} display={'flex'}>
-        <Box gap={1} display='flex'>
-          <Select
-            sx={{ flex: 1 }}
-            value={formData.type}
-            onChange={handleFieldChange('type')}
-          >
-            {transactionOptions.map(({ value }) => (
-              <MenuItem value={value} key={value}>
-                {t(`transactions.${value}`)}
-              </MenuItem>
-            ))}
-          </Select>
-          <Select
-            sx={{ flex: 1 }}
-            value={formData.category}
-            onChange={handleFieldChange('category')}
-          >
-            {categoryOptions.map(({ value }) => (
-              <MenuItem value={value} key={value}>
-                {t(`categories.${value}`)}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-        <Box display='flex' gap={1}>
-          <Select
-            sx={{ flex: 1 }}
-            size='small'
-            value={formData.source}
-            onChange={handleFieldChange('source')}
-            disabled={assets?.length <= 0}
-            displayEmpty
-          >
-            <MenuItem value=''>
-              {assets?.length <= 0
-                ? t('overview.noSourcesAvailable')
-                : t('overview.selectSource')}
-            </MenuItem>
-            {assets.map(asset => (
-              <MenuItem value={asset.id} key={asset.id}>
-                {asset.name}
-              </MenuItem>
-            ))}
-          </Select>
-          <Select
-            sx={{ width: 200 }}
-            size='small'
-            value={formData.behavior}
-            onChange={handleFieldChange('behavior')}
-          >
-            {ExpenseBehaviorOptions.map(option => (
-              <MenuItem value={option.value} key={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-        <Box sx={AmountFieldContainerSx}>
-          <Box gap={1} display='flex'>
-            <AmountInput
-              value={formData.amount}
-              onChange={handleAmountChange}
-              sx={{ flex: 1 }}
-            />
-            <Button
-              onClick={handleSave}
-              disabled={
-                createTransactionMutation.isPending || formData.amount <= 0
-              }
-            >
-              {t('common.save')}
-            </Button>
+      {control}
+    </Box>
+  );
+
+  const categoryDot = (category: string) => (
+    <Box
+      sx={{
+        ...CategoryDotSx,
+        bgcolor: CATEGORY_COLORS[category] ?? CATEGORY_COLORS.OTHER,
+      }}
+    />
+  );
+
+  return (
+    <WidgetCard title={t('overview.dailySpends')}>
+      <Box sx={ColumnsSx}>
+        <Box sx={FormColumnSx}>
+          <Box sx={SelectGridSx}>
+            {labelled(
+              t('transactions.type'),
+              <Select
+                fullWidth
+                value={formData.type}
+                onChange={handleFieldChange('type')}
+              >
+                {transactionOptions.map(({ value }) => (
+                  <MenuItem value={value} key={value}>
+                    {t(`transactions.${value}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+            {labelled(
+              t('transactions.category'),
+              <Select
+                fullWidth
+                value={formData.category}
+                onChange={handleFieldChange('category')}
+                renderValue={value => (
+                  <Box sx={CategoryValueSx}>
+                    {categoryDot(String(value))}
+                    {t(`categories.${value}`)}
+                  </Box>
+                )}
+              >
+                {categoryOptions.map(({ value }) => (
+                  <MenuItem value={value} key={value} sx={CategoryValueSx}>
+                    {categoryDot(value)}
+                    {t(`categories.${value}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+            {labelled(
+              t('transactions.source'),
+              <Select
+                fullWidth
+                value={formData.source}
+                onChange={handleFieldChange('source')}
+                disabled={assets?.length <= 0}
+                displayEmpty
+              >
+                <MenuItem value=''>
+                  {assets?.length <= 0
+                    ? t('overview.noSourcesAvailable')
+                    : t('overview.selectSource')}
+                </MenuItem>
+                {assets.map(asset => (
+                  <MenuItem value={asset.id} key={asset.id}>
+                    {asset.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+            {labelled(
+              t('transactions.behavior'),
+              <Select
+                fullWidth
+                value={formData.behavior}
+                onChange={handleFieldChange('behavior')}
+              >
+                {ExpenseBehaviorOptions.map(option => (
+                  <MenuItem value={option.value} key={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
           </Box>
-          {showSuggestions && (
-            <Paper sx={SuggestionsDropdownSx} elevation={3}>
-              <List dense disablePadding>
-                {comboSuggestions.map(suggestion => {
-                  const formattedAmount = formatTransactionAmount(
-                    debouncedAmount,
-                    formData.type,
-                    formData.currency
-                  );
-                  return (
-                    <ListItemButton
-                      key={`${suggestion.category}-${suggestion.behavior}`}
-                      onClick={() =>
-                        handleSuggestionSelect(
-                          suggestion.category,
-                          suggestion.behavior,
-                          suggestion.description
-                        )
-                      }
-                      sx={SuggestionItemSx}
-                    >
-                      <Box
-                        sx={{
-                          ...CategoryDotSx,
-                          bgcolor:
-                            CATEGORY_COLORS[suggestion.category] ??
-                            CATEGORY_COLORS.OTHER,
-                        }}
-                      />
-                      <ListItemText
-                        sx={SuggestionTextSx}
-                        primary={`${t(`categories.${suggestion.category}`)} · ${t(`transactions.${suggestion.behavior}`)}`}
-                        secondary={suggestion.description || undefined}
-                        slotProps={{
-                          primary: { variant: 'body2', fontWeight: 600 },
-                          secondary: {
-                            variant: 'caption',
-                            sx: TruncatedTextSx,
-                          },
-                        }}
-                      />
-                      <Typography
-                        variant='body2'
-                        sx={{
-                          fontWeight: 700,
-                          whiteSpace: 'nowrap',
-                          color:
-                            formattedAmount.color === 'green'
-                              ? 'success.main'
-                              : formattedAmount.color === 'grey'
-                                ? 'text.secondary'
-                                : 'error.main',
-                        }}
+          <Box sx={AmountFieldContainerSx}>
+            <Box sx={AmountRowSx}>
+              <AmountInput
+                value={formData.amount}
+                onChange={handleAmountChange}
+                sx={{ flex: 1 }}
+              />
+              <Button
+                onClick={handleSave}
+                disabled={
+                  createTransactionMutation.isPending || formData.amount <= 0
+                }
+              >
+                {t('common.save')}
+              </Button>
+            </Box>
+            {showSuggestions && (
+              <Paper sx={SuggestionsDropdownSx} elevation={3}>
+                <List dense disablePadding>
+                  {comboSuggestions.map(suggestion => {
+                    return (
+                      <ListItemButton
+                        key={`${suggestion.category}-${suggestion.behavior}`}
+                        onClick={() =>
+                          handleSuggestionSelect(
+                            suggestion.category,
+                            suggestion.behavior,
+                            suggestion.description
+                          )
+                        }
+                        sx={SuggestionItemSx}
                       >
-                        {formattedAmount.displayText}
-                      </Typography>
-                    </ListItemButton>
-                  );
-                })}
-              </List>
-            </Paper>
-          )}
+                        {categoryDot(suggestion.category)}
+                        <ListItemText
+                          sx={SuggestionTextSx}
+                          primary={`${t(`categories.${suggestion.category}`)} · ${t(`transactions.${suggestion.behavior}`)}`}
+                          secondary={suggestion.description || undefined}
+                          slotProps={{
+                            primary: { variant: 'body2', fontWeight: 600 },
+                            secondary: {
+                              variant: 'caption',
+                              sx: TruncatedTextSx,
+                            },
+                          }}
+                        />
+                        <MoneyText
+                          variant='body2'
+                          amount={debouncedAmount}
+                          type={formData.type}
+                          currency={formData.currency}
+                          sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}
+                        />
+                      </ListItemButton>
+                    );
+                  })}
+                </List>
+              </Paper>
+            )}
+          </Box>
         </Box>
-      </Box>
-      <Box sx={TransactionsContainerSx}>
-        <Typography component={'h4'} sx={{ mb: 1, color: grey[600] }}>
-          {t('overview.transactionList')}
-        </Typography>
-        {transactions.length === 0 ? (
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noTransactions')}
+        <Box sx={ListColumnSx}>
+          <Typography component='h3' variant='h3'>
+            {t('overview.transactionList')}
           </Typography>
-        ) : (
-          <Box sx={TransactionListSx}>
-            {transactions.map((transaction, index) => (
-              <Box key={transaction.id || index} sx={TransactionItemSx}>
-                <Box sx={TransactionItemContentSx}>
-                  <Typography variant='body2' sx={{ fontWeight: 500 }}>
+          <Typography variant='caption' color='text.secondary'>
+            {t('overview.today')}
+          </Typography>
+          {transactions.length === 0 ? (
+            <EmptyState message={t('overview.noTransactions')} />
+          ) : (
+            <Box sx={TransactionListSx}>
+              {transactions.map((transaction, index) => (
+                <Box key={transaction.id || index} sx={TransactionItemSx}>
+                  <Typography variant='body1' sx={{ fontWeight: 500 }}>
                     {transaction.category
                       ? t(`categories.${transaction.category}`)
                       : t('categories.OTHER')}
                   </Typography>
-                  <Typography
-                    variant='body2'
-                    sx={{
-                      color: formatTransactionAmount(
-                        transaction.amount || 0,
-                        transaction.type,
-                        transaction.currency || 'VND'
-                      ).color,
-                      fontWeight: 600,
-                    }}
-                  >
-                    {
-                      formatTransactionAmount(
-                        transaction.amount || 0,
-                        transaction.type,
-                        transaction.currency || 'VND'
-                      ).displayText
-                    }
-                  </Typography>
+                  <MoneyText
+                    amount={transaction.amount || 0}
+                    type={transaction.type}
+                    currency={transaction.currency || 'VND'}
+                  />
                 </Box>
-              </Box>
-            ))}
-          </Box>
-        )}
+              ))}
+            </Box>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </WidgetCard>
   );
 };
 
 // Styles
+const ColumnsSx: SxProps = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 3,
+};
+
+const FormColumnSx: SxProps = {
+  flex: '1 1 260px',
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 1.5,
+};
+
+const ListColumnSx: SxProps = {
+  flex: '1 1 260px',
+  minWidth: 0,
+  borderStyle: 'solid',
+  borderColor: 'divider',
+  borderWidth: { xs: '1px 0 0 0', md: '0 0 0 1px' },
+  pt: { xs: 3, md: 0 },
+  pl: { md: 3 },
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const SelectGridSx: SxProps = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 1.5,
+};
+
+const FieldSx: SxProps = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0.5,
+  minWidth: 0,
+};
+
+const AmountRowSx: SxProps = {
+  display: 'flex',
+  gap: 1,
+};
+
+const CategoryValueSx: SxProps = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 1,
+};
+
 const AmountFieldContainerSx: SxProps = {
   position: 'relative',
 };
@@ -334,6 +382,8 @@ const SuggestionsDropdownSx: SxProps = {
   zIndex: 10,
   maxHeight: 240,
   overflowY: 'auto',
+  border: '1px solid',
+  borderColor: 'divider',
 };
 
 const SuggestionItemSx: SxProps = {
@@ -343,8 +393,8 @@ const SuggestionItemSx: SxProps = {
 };
 
 const CategoryDotSx: SxProps = {
-  width: 10,
-  height: 10,
+  width: 8,
+  height: 8,
   borderRadius: '50%',
   flexShrink: 0,
 };
@@ -361,63 +411,20 @@ const TruncatedTextSx: SxProps = {
   whiteSpace: 'nowrap',
 };
 
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 400 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-};
-
 const TransactionListSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 1,
-  overflowY: 'auto',
-  flex: 1,
+  mt: 1,
   maxHeight: 300,
-  minHeight: 0,
-  '&::-webkit-scrollbar': {
-    width: '8px',
-  },
-  '&::-webkit-scrollbar-track': {
-    background: grey[100],
-    borderRadius: '4px',
-  },
-  '&::-webkit-scrollbar-thumb': {
-    background: grey[400],
-    borderRadius: '4px',
-    '&:hover': {
-      background: grey[500],
-    },
-  },
-};
-
-const TransactionsContainerSx: SxProps = {
-  flex: 1,
-  minHeight: 0,
-  mt: 2,
-  display: 'flex',
-  flexDirection: 'column',
+  overflowY: 'auto',
 };
 
 const TransactionItemSx: SxProps = {
-  p: 1.5,
-  border: `1px solid ${grey[200]}`,
-  borderRadius: 1,
-};
-
-const TransactionItemContentSx: SxProps = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
+  gap: 1,
+  minHeight: 48,
+  borderTop: '1px solid',
+  borderColor: 'divider',
 };

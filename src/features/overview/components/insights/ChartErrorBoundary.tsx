@@ -1,5 +1,4 @@
 import { Box, SxProps, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
 import { Component, ErrorInfo, ReactNode } from 'react';
 
 import { useBudtrTranslation } from '@/hooks/useI18n';
@@ -32,7 +31,7 @@ class ChartErrorBoundaryClass extends Component<InnerProps, State> {
     if (this.state.hasError) {
       return (
         <Box sx={ErrorContainerSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
+          <Typography variant='body2' color='text.secondary'>
             {this.props.errorMessage}
           </Typography>
         </Box>
@@ -55,10 +54,5 @@ const ErrorContainerSx: SxProps = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  width: { xs: '100%', md: 400 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
+  minHeight: 160,
 };

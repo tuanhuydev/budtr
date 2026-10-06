@@ -1,112 +1,91 @@
-import { Box, SxProps, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useMemo } from 'react';
 
+import { ChartLegend } from '@/components/ui/ChartLegend';
+import { WidgetCard } from '@/components/ui/WidgetCard';
+import {
+  CHART_HEIGHT,
+  bandXAxis,
+  chartSx,
+  fullAmount,
+  moneyYAxisFromZero,
+} from '@/configs/chartTheme';
 import { CATEGORY_COLORS } from '@/configs/constants';
 import { useMonthlyComparison } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
-import { formatChartValue } from '@/utils/transactionFormatter';
 
-import { ChartErrorBoundary } from './ChartErrorBoundary';
-import { ChartSkeleton } from './ChartSkeleton';
+const MAX_CATEGORIES = 5;
 
 const MonthlyComparisonInner = () => {
   const { t } = useBudtrTranslation();
   const { data, isLoading } = useMonthlyComparison();
 
   const { series, xLabels } = useMemo(() => {
-    if (!data || !data.months?.length) return { series: [], xLabels: [] };
+    if (!data?.months?.length) return { series: [], xLabels: [] as string[] };
 
-    const pivoted = data.months.map(month => {
-      const entry: Record<string, number> = {};
-      data.data
-        .filter(d => d.month === month)
-        .forEach(d => {
-          entry[d.category] = d.amount;
-        });
-      return entry;
-    });
+    const valueOf = (month: string, cat: string) =>
+      data.data.find(d => d.month === month && d.category === cat)?.amount ?? 0;
+    const totals = data.categories.map(cat => ({
+      cat,
+      total: data.months.reduce((sum, m) => sum + valueOf(m, cat), 0),
+    }));
+    const ranked = totals
+      .filter(x => x.cat !== 'OTHER')
+      .sort((a, b) => b.total - a.total)
+      .map(x => x.cat);
+    const top = ranked.slice(0, MAX_CATEGORIES);
+    const rest = [
+      ...ranked.slice(MAX_CATEGORIES),
+      ...(data.categories.includes('OTHER') ? ['OTHER'] : []),
+    ];
 
-    const chartSeries = data.categories.map(cat => ({
+    const built = top.map(cat => ({
       id: cat,
       label: t(`categories.${cat}`),
-      data: pivoted.map(p => p[cat] ?? 0),
+      data: data.months.map(m => valueOf(m, cat)),
       color: CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.OTHER,
-      stack: undefined,
+      valueFormatter: fullAmount,
     }));
-
-    return { series: chartSeries, xLabels: data.months };
+    if (rest.length) {
+      built.push({
+        id: 'OTHER',
+        label: t('categories.OTHER'),
+        data: data.months.map(m =>
+          rest.reduce((sum, cat) => sum + valueOf(m, cat), 0)
+        ),
+        color: CATEGORY_COLORS.OTHER,
+        valueFormatter: fullAmount,
+      });
+    }
+    return { series: built, xLabels: data.months };
   }, [data, t]);
 
-  if (isLoading) return <ChartSkeleton width={{ xs: '100%', md: 560 }} />;
-
-  if (!data || !data.months?.length) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t('insights.monthlyComparison')}
-        </Typography>
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noData')}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t('insights.monthlyComparison')}
-      </Typography>
+    <WidgetCard
+      title={t('insights.monthlyComparison')}
+      loading={isLoading}
+      empty={!data?.months?.length ? t('overview.noData') : undefined}
+    >
       <BarChart
-        xAxis={[{ scaleType: 'band', data: xLabels }]}
-        yAxis={[{ valueFormatter: formatChartValue }]}
+        xAxis={[bandXAxis(xLabels)]}
+        yAxis={[moneyYAxisFromZero]}
         series={series}
+        height={CHART_HEIGHT}
         borderRadius={4}
-        height={250}
-        margin={{ left: 56, right: 20, top: 10, bottom: 10 }}
-        sx={{ width: '100%' }}
-        slotProps={{
-          legend: {
-            direction: 'horizontal',
-            position: { vertical: 'bottom', horizontal: 'center' },
-          },
-        }}
+        grid={{ horizontal: true }}
+        hideLegend
+        sx={chartSx}
       />
-    </Box>
+      <ChartLegend
+        items={series.map(s => ({
+          id: s.id,
+          label: s.label,
+          color: s.color,
+          shape: 'square',
+        }))}
+      />
+    </WidgetCard>
   );
 };
 
-export const MonthlyComparison = () => (
-  <ChartErrorBoundary>
-    <MonthlyComparisonInner />
-  </ChartErrorBoundary>
-);
-
-// Styles
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 560 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-};
-
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: 200,
-};
+export const MonthlyComparison = () => <MonthlyComparisonInner />;

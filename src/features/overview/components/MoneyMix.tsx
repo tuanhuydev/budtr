@@ -1,38 +1,32 @@
-import { Box, SxProps, Typography, Chip, Popover } from '@mui/material';
-import { grey } from '@mui/material/colors';
-import { DefaultizedPieValueType } from '@mui/x-charts/models';
-import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
-import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfYear,
-  endOfYear,
-} from 'date-fns';
+import { Box, Chip, Popover, SxProps, Typography } from '@mui/material';
+import { PieChart } from '@mui/x-charts/PieChart';
 import { useMemo, useState } from 'react';
 
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
+import { ChartLegend } from '@/components/ui/ChartLegend';
+import { WidgetCard } from '@/components/ui/WidgetCard';
+import { tabularNums } from '@/configs/theme';
 import { useTransactions } from '@/hooks/api/useTransactions';
 import { ExpenseType } from '@/types/transaction';
+import { Period, getPeriodRange } from '@/utils/period';
 import { formatTransactionAmount } from '@/utils/transactionFormatter';
 
 import { CATEGORY_COLORS } from '../../../configs/constants';
 import { useBudtrTranslation } from '../../../hooks/useI18n';
 
-export type TimePeriod = 'today' | 'week' | 'month' | 'year' | 'custom';
-
-const sizing = {
-  width: 250,
-  height: 250,
-  hideLegend: true,
-};
+export type TimePeriod = Period;
 
 interface MoneyMixProps {
   today: Date;
 }
+
+const PERIOD_OPTIONS: Array<{ value: TimePeriod; labelKey: string }> = [
+  { value: 'today', labelKey: 'overview.today' },
+  { value: 'week', labelKey: 'overview.thisWeek' },
+  { value: 'month', labelKey: 'overview.thisMonth' },
+  { value: 'year', labelKey: 'overview.thisYear' },
+  { value: 'custom', labelKey: 'overview.custom' },
+];
 
 export const MoneyMix = ({ today }: MoneyMixProps) => {
   const { t } = useBudtrTranslation();
@@ -41,271 +35,141 @@ export const MoneyMix = ({ today }: MoneyMixProps) => {
     startDate: null,
     endDate: null,
   });
-  const [datePickerAnchor, setDatePickerAnchor] = useState<null | HTMLElement>(
-    null
-  );
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
 
-  const periodOptions = [
-    { value: 'today' as TimePeriod, labelKey: 'overview.today' },
-    { value: 'week' as TimePeriod, labelKey: 'overview.thisWeek' },
-    { value: 'month' as TimePeriod, labelKey: 'overview.thisMonth' },
-    { value: 'year' as TimePeriod, labelKey: 'overview.thisYear' },
-    {
-      value: 'custom' as TimePeriod,
-      labelKey: 'overview.custom',
-      id: 'custom-period-button',
-    },
-  ];
-
-  const getDateRange = (period: TimePeriod): { start: Date; end: Date } => {
-    switch (period) {
-      case 'today':
-        return { start: startOfDay(today), end: endOfDay(today) };
-      case 'week':
-        return { start: startOfWeek(today), end: endOfWeek(today) };
-      case 'month':
-        return { start: startOfMonth(today), end: endOfMonth(today) };
-      case 'year':
-        return { start: startOfYear(today), end: endOfYear(today) };
-      case 'custom':
-        return {
-          start: customDateRange.startDate || startOfDay(today),
-          end: customDateRange.endDate || endOfDay(today),
-        };
-      default:
-        return { start: startOfDay(today), end: endOfDay(today) };
-    }
-  };
-
-  const { start, end } = getDateRange(selectedPeriod);
-
-  const { data: transactionsData } = useTransactions({
+  const { start, end } = getPeriodRange(selectedPeriod, today, customDateRange);
+  const { data: transactionsData, isLoading } = useTransactions({
     startDate: start,
     endDate: end,
   });
 
-  const transactions =
-    transactionsData?.transactions.filter(
-      transaction => transaction.type === ExpenseType.EXPENSE
-    ) ?? [];
-
-  const titleKey = useMemo(() => {
-    switch (selectedPeriod) {
-      case 'today':
-        return 'overview.todayMoneyMix';
-      case 'week':
-        return 'overview.weekMoneyMix';
-      case 'month':
-        return 'overview.monthMoneyMix';
-      case 'year':
-        return 'overview.yearMoneyMix';
-      case 'custom':
-        return 'overview.customMoneyMix';
-      default:
-        return 'overview.todayMoneyMix';
-    }
-  }, [selectedPeriod]);
-
   const chartData = useMemo(() => {
-    // Group transactions by category and sum amounts
-    const categoryTotals = transactions.reduce(
-      (acc, transaction) => {
-        const category = transaction.category;
-        if (!acc[category]) {
-          acc[category] = 0;
-        }
-        acc[category] += transaction.amount;
+    const expenses =
+      transactionsData?.transactions.filter(
+        tx => tx.type === ExpenseType.EXPENSE
+      ) ?? [];
+    const totals = expenses.reduce(
+      (acc, tx) => {
+        acc[tx.category] = (acc[tx.category] ?? 0) + tx.amount;
         return acc;
       },
       {} as Record<string, number>
     );
-
-    // Convert to chart data format
-    return Object.entries(categoryTotals).map(([category, value]) => ({
+    return Object.entries(totals).map(([category, value]) => ({
+      id: category,
       label: category ? t(`categories.${category}`) : t('categories.OTHER'),
-      formattedValue: formatTransactionAmount(value, ExpenseType.EXPENSE)
-        .displayText,
       value,
       color: CATEGORY_COLORS[category] || CATEGORY_COLORS.OTHER,
     }));
-  }, [transactions, t]);
-
-  const handlePeriodChange = (period: TimePeriod) => {
-    if (period === 'custom') {
-      // Open date picker
-      setDatePickerAnchor(document.getElementById('custom-period-button'));
-    } else {
-      setSelectedPeriod(period);
-    }
-  };
-
-  const handleCustomDateRangeChange = (newDateRange: DateRange) => {
-    setCustomDateRange(newDateRange);
-    if (newDateRange.startDate && newDateRange.endDate) {
-      setSelectedPeriod('custom');
-      setDatePickerAnchor(null);
-    }
-  };
-
-  const handleCloseDatePicker = () => {
-    setDatePickerAnchor(null);
-  };
+  }, [transactionsData, t]);
 
   const total = useMemo(
     () => chartData.reduce((sum, item) => sum + item.value, 0),
     [chartData]
   );
 
-  const formattedTotal = useMemo(
-    () => formatTransactionAmount(total, ExpenseType.EXPENSE).displayText,
-    [total]
-  );
-
-  const getArcLabel = (params: DefaultizedPieValueType) => {
-    if (total === 0) return '0%';
-    const percent = params.value / total;
-    return `${(percent * 100).toFixed(0)}%`;
+  const handleCustomChange = (range: DateRange) => {
+    setCustomDateRange(range);
+    if (range.startDate && range.endDate) {
+      setSelectedPeriod('custom');
+      setAnchor(null);
+    }
   };
 
-  const periodFilterSection = (
+  const legendItems = chartData.map(item => ({
+    id: item.id,
+    label: `${item.label} ${total ? ((item.value / total) * 100).toFixed(1) : 0}%`,
+    color: item.color,
+  }));
+
+  const action = (
     <>
-      {/* Period Filter Buttons */}
-      <Box sx={FilterButtonsSx}>
-        {periodOptions.map(option => (
+      {PERIOD_OPTIONS.map(option => {
+        const active = selectedPeriod === option.value;
+        return (
           <Chip
             key={option.value}
-            id={option.id}
-            label={t(option.labelKey)}
-            onClick={() => handlePeriodChange(option.value)}
-            color={selectedPeriod === option.value ? 'primary' : 'default'}
+            component='button'
             size='small'
+            clickable
+            aria-pressed={active}
+            label={t(option.labelKey)}
+            variant={active ? 'filled' : 'outlined'}
+            color={active ? 'primary' : 'default'}
+            onClick={e =>
+              option.value === 'custom'
+                ? setAnchor(e.currentTarget)
+                : setSelectedPeriod(option.value)
+            }
           />
-        ))}
-      </Box>
-
-      {/* Date Range Picker Popover */}
+        );
+      })}
       <Popover
-        open={Boolean(datePickerAnchor)}
-        anchorEl={datePickerAnchor}
-        onClose={handleCloseDatePicker}
-        anchorOrigin={PopoverAnchorOriginSx}
+        open={Boolean(anchor)}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
         <Box sx={{ p: 2 }}>
           <DateRangePicker
             value={customDateRange}
-            onChange={handleCustomDateRangeChange}
+            onChange={handleCustomChange}
           />
         </Box>
       </Popover>
     </>
   );
 
-  if (chartData.length === 0) {
-    return (
-      <Box sx={ContainerSx}>
-        <Typography variant='body2' sx={TitleSx}>
-          {t(titleKey)}
-        </Typography>
-
-        {periodFilterSection}
-
-        <Box sx={EmptyStateSx}>
-          <Typography variant='body2' sx={{ color: grey[500] }}>
-            {t('overview.noTransactions')}
-          </Typography>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={ContainerSx}>
-      <Typography component='h3' sx={TitleSx}>
-        {t(titleKey)}
-      </Typography>
-
-      {periodFilterSection}
-
-      <Box sx={ChartContainerSx}>
-        <PieChart
-          series={[
-            {
-              innerRadius: 60,
-              outerRadius: 100,
-              paddingAngle: 2,
-              cornerRadius: 3,
-              valueFormatter: item => {
-                const dataItem = chartData.find(d => d.value === item.value);
-                return dataItem?.formattedValue || '';
+    <WidgetCard
+      title={t('overview.todayMoneyMix')}
+      action={action}
+      loading={isLoading}
+      empty={chartData.length === 0 ? t('overview.noTransactions') : undefined}
+    >
+      <Box sx={ChartContainerSx} aria-label={t('overview.todayMoneyMix')}>
+        <Box sx={DonutSx}>
+          <PieChart
+            series={[
+              {
+                data: chartData,
+                innerRadius: 60,
+                outerRadius: 84,
+                paddingAngle: 2,
+                cornerRadius: 3,
+                valueFormatter: item =>
+                  formatTransactionAmount(item.value, ExpenseType.EXPENSE)
+                    .displayText,
               },
-              data: chartData,
-              arcLabel: getArcLabel,
-            },
-          ]}
-          sx={PieChartSx}
-          {...sizing}
-        />
-        {/* Total in center */}
-        <Box sx={CenterTotalSx}>
-          <Typography
-            variant='h6'
-            sx={{ fontWeight: 'bold', color: grey[800] }}
-          >
-            {formattedTotal}
-          </Typography>
+            ]}
+            width={180}
+            height={180}
+            hideLegend
+          />
+          <Box sx={CenterTotalSx}>
+            <Typography variant='caption' color='text.secondary'>
+              {t('overview.total')}
+            </Typography>
+            <Typography sx={TotalSx}>{total.toLocaleString()}</Typography>
+          </Box>
         </Box>
+        <ChartLegend items={legendItems} centered />
       </Box>
-    </Box>
+    </WidgetCard>
   );
 };
 
 // Styles
-const TitleSx: SxProps = {
-  fontWeight: 600,
-  mb: 1,
-};
-
-const ContainerSx: SxProps = {
-  width: { xs: '100%', md: 300 },
-  height: 400,
-  background: 'white',
-  border: `solid 1px ${grey[200]}`,
-  borderRadius: 2,
-  p: 2,
+const ChartContainerSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
-};
-
-const EmptyStateSx: SxProps = {
-  display: 'flex',
-  justifyContent: 'center',
   alignItems: 'center',
-  height: 250,
 };
 
-const FilterButtonsSx: SxProps = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 0.5,
-  mb: 2,
-};
-
-const PopoverAnchorOriginSx = {
-  vertical: 'bottom',
-  horizontal: 'left',
-} as const;
-
-const ChartContainerSx: SxProps = {
+const DonutSx: SxProps = {
   position: 'relative',
-  display: 'flex',
-  justifyContent: 'center',
-};
-
-const PieChartSx: SxProps = {
-  [`& .${pieArcLabelClasses.root}`]: {
-    fill: 'white',
-    fontSize: 14,
-  },
+  width: 180,
+  height: 180,
 };
 
 const CenterTotalSx: SxProps = {
@@ -314,4 +178,12 @@ const CenterTotalSx: SxProps = {
   left: '50%',
   transform: 'translate(-50%, -50%)',
   textAlign: 'center',
+  pointerEvents: 'none',
+};
+
+const TotalSx: SxProps = {
+  fontSize: 20,
+  lineHeight: '28px',
+  fontWeight: 700,
+  ...tabularNums,
 };

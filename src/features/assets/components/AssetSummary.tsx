@@ -9,10 +9,10 @@ import { useBudtrTranslation } from '@/hooks/useI18n';
 import { Asset, AssetType } from '@/types/asset';
 
 const ASSET_TYPE_COLOR: Record<AssetType, string> = {
-  [AssetType.CASH]: '#4caf50',
-  [AssetType.BANK]: '#2196f3',
-  [AssetType.INVESTMENT]: '#ff9800',
-  [AssetType.PHYSICAL]: '#9c27b0',
+  [AssetType.CASH]: '#7FA66B',
+  [AssetType.BANK]: '#3B82A0',
+  [AssetType.INVESTMENT]: '#D9A441',
+  [AssetType.PHYSICAL]: '#8C7BB5',
 };
 
 interface AssetSummaryProps {
