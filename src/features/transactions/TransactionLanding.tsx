@@ -1,4 +1,11 @@
-import { Box, Button, CircularProgress, Menu, MenuItem } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from '@mui/material';
 import { GridPaginationModel } from '@mui/x-data-grid';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
@@ -11,14 +18,18 @@ import {
   useUpdateTransaction,
   useDeleteTransaction,
 } from '@/hooks/api/useTransactions';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { useShellService } from '@/hooks/useShellService';
 import type { ToastService } from '@/types/shell';
 import { Transaction } from '@/types/transaction';
 
 import { TransactionFormDialog } from './components/TransactionFormDialog';
+import { TransactionQueryInput } from './components/TransactionQueryInput';
 import { TransactionSummary } from './components/TransactionSummary';
 import { TransactionTable } from './components/TransactionTable';
+import { parseTransactionQuery } from './utils/parseTransactionQuery';
+import { toFetchParams } from './utils/toFetchParams';
 
 export const TransactionLanding = () => {
   // region Hooks
@@ -37,14 +48,31 @@ export const TransactionLanding = () => {
     pageSize: 10,
   });
 
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(query, 300);
+  const parsedQuery = useMemo(
+    () => parseTransactionQuery(debouncedQuery),
+    [debouncedQuery]
+  );
+  const filterParams = useMemo(
+    () => toFetchParams(parsedQuery, dateRange),
+    [parsedQuery, dateRange]
+  );
+
   // React Query hooks
-  const { data: transactionsData, isLoading: transactionsLoading } =
-    useTransactions({
-      startDate: dateRange.startDate,
-      endDate: dateRange.endDate,
+  const {
+    data: transactionsData,
+    isLoading: transactionsLoading,
+    isFetching: transactionsFetching,
+  } = useTransactions(
+    {
+      ...filterParams,
       page: paginationModel.page,
       pageSize: paginationModel.pageSize,
-    });
+    },
+    // Keep the table (and the focused search box) mounted while refetching.
+    { keepPreviousData: true }
+  );
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
@@ -61,10 +89,11 @@ export const TransactionLanding = () => {
     return rowCountRef.current;
   }, [transactionsData?.total]);
 
-  // Reset to first page when date range changes or when transactions update
+  // Reset to first page whenever the effective filters change
+  const filterKey = JSON.stringify(filterParams);
   useEffect(() => {
     setPaginationModel(prev => ({ ...prev, page: 0 }));
-  }, [dateRange.startDate, dateRange.endDate]);
+  }, [filterKey]);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTransaction, setSelectedTransaction] =
@@ -183,7 +212,20 @@ export const TransactionLanding = () => {
           flexDirection={{ xs: 'column-reverse', md: 'row' }}
           flexWrap={'wrap'}
         >
-          <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
+          <Tooltip
+            title={
+              parsedQuery.date ? t('transactions.dateOverriddenByQuery') : ''
+            }
+          >
+            <Box>
+              <DateRangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                disabled={!!parsedQuery.date}
+              />
+            </Box>
+          </Tooltip>
+          <TransactionQueryInput onQueryChange={setQuery} />
           <Button
             variant='contained'
             onClick={handleModalOpen}
@@ -200,7 +242,7 @@ export const TransactionLanding = () => {
           rowCount={rowCount}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          loading={transactionsLoading}
+          loading={transactionsFetching}
           onMenuClick={handleMenuClick}
         />
         <TransactionSummary transactions={transactions} />

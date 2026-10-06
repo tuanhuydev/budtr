@@ -42,7 +42,29 @@ export interface FetchTransactionsParams {
   endDate?: Date | null;
   page?: number;
   pageSize?: number;
+  /** Multiple values are OR-ed by the backend. */
+  type?: string[];
+  category?: string[];
+  behavior?: string[];
+  source?: string[];
+  excludeType?: string[];
+  excludeCategory?: string[];
+  excludeBehavior?: string[];
+  excludeSource?: string[];
+  /** Free text, matched against the description. */
+  search?: string;
 }
+
+export const TRANSACTION_LIST_FILTER_KEYS = [
+  'type',
+  'category',
+  'behavior',
+  'source',
+  'excludeType',
+  'excludeCategory',
+  'excludeBehavior',
+  'excludeSource',
+] as const;
 
 export interface FetchTransactionsResponse {
   transactions: Transaction[];
@@ -110,6 +132,16 @@ export const transactionsApi = {
     }
     if (params?.pageSize !== undefined) {
       urlParams.append('pageSize', params.pageSize.toString());
+    }
+    TRANSACTION_LIST_FILTER_KEYS.forEach(key => {
+      const values = params?.[key];
+      if (values?.length) {
+        // Backend accepts comma-separated values (OR semantics).
+        urlParams.append(key, values.join(','));
+      }
+    });
+    if (params?.search?.trim()) {
+      urlParams.append('search', params.search.trim());
     }
 
     const url = `${AUTH_URL}/transactions${

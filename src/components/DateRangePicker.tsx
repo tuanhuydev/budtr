@@ -13,12 +13,14 @@ interface DateRangePickerProps {
   value?: DateRange;
   onChange?: (dateRange: DateRange) => void;
   sx?: SxProps;
+  disabled?: boolean;
 }
 
 export const DateRangePicker = ({
   value,
   onChange,
   sx,
+  disabled,
 }: DateRangePickerProps) => {
   const { t } = useBudtrTranslation();
   const [internalValue, setInternalValue] = useState<DateRange>({
@@ -80,6 +82,7 @@ export const DateRangePicker = ({
     <Box sx={containerSx}>
       <TextField
         type='date'
+        disabled={disabled}
         label={t('common.startDate')}
         value={formatDateForInput(dateRange.startDate)}
         onChange={handleStartDateChange}
@@ -93,6 +96,7 @@ export const DateRangePicker = ({
       <Box sx={{ color: grey[500] }}>—</Box>
       <TextField
         type='date'
+        disabled={disabled}
         label={t('common.endDate')}
         value={formatDateForInput(dateRange.endDate)}
         onChange={handleEndDateChange}
