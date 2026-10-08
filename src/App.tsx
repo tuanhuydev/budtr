@@ -10,21 +10,11 @@ import { AssetManagementLanding } from './features/assets/AssetManagementLanding
 import { OverviewLanding } from './features/overview/OverviewLanding';
 import { TransactionLanding } from './features/transactions/TransactionLanding';
 import { useBudtrTranslation } from './hooks/useI18n';
-
-const TAB_STORAGE_KEY = 'budtr:active-tab';
+import { getStorage, initStorage } from './utils/storage';
 
 const TAB_IDS = ['overview', 'transactions', 'asset'] as const;
 
-const readStoredTab = () => {
-  try {
-    const stored = Number(window.sessionStorage.getItem(TAB_STORAGE_KEY));
-    return Number.isInteger(stored) && stored >= 0 && stored < TAB_IDS.length
-      ? stored
-      : 0;
-  } catch {
-    return 0;
-  }
-};
+const readStoredTab = () => getStorage(TAB_IDS.length).get('activeTab');
 
 const Content: React.FC = () => {
   const { t } = useBudtrTranslation();
@@ -37,11 +27,7 @@ const Content: React.FC = () => {
   const handleChange = (next: number) => {
     setActiveTab(next);
     setVisited(prev => new Set(prev).add(next));
-    try {
-      window.sessionStorage.setItem(TAB_STORAGE_KEY, String(next));
-    } catch {
-      // storage unavailable: the tab just is not remembered
-    }
+    getStorage(TAB_IDS.length).set('activeTab', next);
   };
 
   const tabs = [
@@ -83,13 +69,21 @@ const Content: React.FC = () => {
   );
 };
 
-const App: React.FC = () => (
-  <QueryProvider>
-    <ThemeProvider>
-      <Content />
-    </ThemeProvider>
-  </QueryProvider>
-);
+interface AppProps {
+  /** Capability the shell issues for budtr's storage slice. */
+  storageGrant?: string;
+}
+
+const App: React.FC<AppProps> = ({ storageGrant }) => {
+  initStorage(storageGrant);
+  return (
+    <QueryProvider>
+      <ThemeProvider>
+        <Content />
+      </ThemeProvider>
+    </QueryProvider>
+  );
+};
 
 export default App;
 

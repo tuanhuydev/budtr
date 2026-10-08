@@ -41,3 +41,35 @@ declare global {
     __SHELL_SERVICES__?: ShellServiceRegistry;
   }
 }
+
+/**
+ * Shell storage service (see mfex-shell src/services/storageService.ts).
+ * Untrusted, user-editable prefs only — never use for auth/permission logic.
+ */
+export type FieldSchema =
+  | { type: 'bool' }
+  | { type: 'int'; min?: number; max?: number }
+  | { type: 'enum'; values: readonly string[] }
+  | { type: 'id'; maxLen?: number };
+
+export interface AppStorage<T> {
+  get(): T;
+  get<K extends keyof T>(key: K): T[K];
+  set<K extends keyof T>(key: K, value: T[K]): void;
+  update(patch: Partial<T>): void;
+  remove(key: keyof T): void;
+  clear(): void;
+  subscribe(cb: (state: T) => void): () => void;
+}
+
+export interface ShellStorageService {
+  forApp<T extends object>(
+    appId: 'budtr',
+    grant: string,
+    opts: {
+      schema: { [K in keyof T]: FieldSchema };
+      defaults: T;
+      version?: number;
+    }
+  ): AppStorage<T>;
+}

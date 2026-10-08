@@ -408,7 +408,20 @@ export function useI18n() {
       return;
     }
 
-    // Add budtr translations to each language
+    // Newer shells take the baseline and layer signed server patches on top.
+    const { registerNamespace } = i18nInstance as i18n & {
+      registerNamespace?: (
+        ns: string,
+        bundled: Record<string, Record<string, unknown>>
+      ) => void;
+    };
+    if (typeof registerNamespace === 'function') {
+      registerNamespace.call(i18nInstance, 'budtr', budtrTranslations);
+      setIsReady(true);
+      return;
+    }
+
+    // Older shell: add budtr translations to each language directly
     Object.entries(budtrTranslations).forEach(([lang, translations]) => {
       // Check if already added to avoid duplicates
       if (!i18nInstance.hasResourceBundle(lang, 'budtr')) {
