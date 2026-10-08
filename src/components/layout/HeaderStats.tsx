@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { ReactNode } from 'react';
 
-import { tabularNums } from '@/configs/theme';
+import { tabularNums, TOUCH } from '@/configs/theme';
 import { useSavingsProgress } from '@/hooks/api/useCharts';
 import { useBudtrTranslation } from '@/hooks/useI18n';
 import { PeriodSummary } from '@/hooks/usePeriodSummary';
@@ -30,12 +30,7 @@ const Stat = ({
   children: ReactNode;
 }) => (
   <Box sx={{ minWidth: 0 }}>
-    <Typography
-      variant='overline'
-      color='text.secondary'
-      component='div'
-      sx={{ '@media (max-width: 899.95px)': { fontSize: 13 } }}
-    >
+    <Typography variant='overline' color='text.secondary' component='div'>
       {label}
     </Typography>
     {loading ? (
@@ -163,14 +158,14 @@ const ValueSx: SxProps = {
   lineHeight: '28px',
   fontWeight: 500,
   ...tabularNums,
-  '@media (max-width: 899.95px)': { fontSize: 22, lineHeight: '30px' },
+  [TOUCH]: { fontSize: 22, lineHeight: '30px' },
 };
 
 const MutedSx: SxProps = {
   fontSize: 14,
   lineHeight: '20px',
   color: 'text.secondary',
-  '@media (max-width: 899.95px)': { fontSize: 16, lineHeight: '22px' },
+  [TOUCH]: { fontSize: 16, lineHeight: '22px' },
 };
 
 const BarSx: SxProps = {

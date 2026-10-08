@@ -2,6 +2,7 @@ import { SxProps, Theme, alpha } from '@mui/material/styles';
 import { axisClasses } from '@mui/x-charts/ChartsAxis';
 import { chartsGridClasses } from '@mui/x-charts/ChartsGrid';
 
+import { TOUCH } from '@/configs/theme';
 import { formatChartValue } from '@/utils/transactionFormatter';
 
 export const CHART_HEIGHT = 230;
@@ -12,7 +13,7 @@ export const chartSx: SxProps<Theme> = theme => ({
   [`& .${axisClasses.tickLabel}`]: {
     fill: theme.palette.text.secondary,
     fontSize: 12,
-    '@media (max-width: 899.95px)': { fontSize: 13 },
+    [TOUCH]: { fontSize: 13 },
   },
   [`& .${axisClasses.bottom} .${axisClasses.line}`]: {
     stroke: theme.palette.divider,
