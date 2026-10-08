@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
 import { ChartLegend } from '@/components/ui/ChartLegend';
 import { WidgetCard } from '@/components/ui/WidgetCard';
-import { tabularNums } from '@/configs/theme';
+import { tabularNums, TOUCH } from '@/configs/theme';
 import { useTransactions } from '@/hooks/api/useTransactions';
 import { ExpenseType } from '@/types/transaction';
 import { Period, getPeriodRange } from '@/utils/period';
@@ -186,4 +186,5 @@ const TotalSx: SxProps = {
   lineHeight: '28px',
   fontWeight: 700,
   ...tabularNums,
+  [TOUCH]: { fontSize: 22, lineHeight: '30px' },
 };

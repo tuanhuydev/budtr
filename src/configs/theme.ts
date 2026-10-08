@@ -17,8 +17,8 @@ export const neutral = {
 export const tabularNums = { fontVariantNumeric: 'tabular-nums' } as const;
 
 // Touch layouts (tablet and phone) get a larger type scale and tap targets.
-const TOUCH = '@media (max-width: 899.95px)';
-const PHONE = '@media (max-width: 599.95px)';
+export const TOUCH = '@media (max-width: 899.95px)';
+export const PHONE = '@media (max-width: 599.95px)';
 
 const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
   const isLight = mode === 'light';
@@ -75,6 +75,18 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
         lineHeight: '24px',
         fontWeight: 600,
       },
+      // Defined explicitly (MUI defaults are 24/20px) so the touch scale below
+      // applies to them like every other variant.
+      h5: {
+        fontSize: 24,
+        lineHeight: '32px',
+        fontWeight: 600,
+      },
+      h6: {
+        fontSize: 20,
+        lineHeight: '28px',
+        fontWeight: 600,
+      },
       body1: {
         fontSize: 14,
         lineHeight: '20px',
@@ -108,6 +120,9 @@ const createBudtrTheme = (mode: 'light' | 'dark'): Theme => {
               h1: { [PHONE]: { fontSize: 26, lineHeight: '34px' } },
               h2: { [TOUCH]: { fontSize: 19, lineHeight: '26px' } },
               h3: { [TOUCH]: { fontSize: 17, lineHeight: '24px' } },
+              h5: { [TOUCH]: { fontSize: 22, lineHeight: '30px' } },
+              h6: { [TOUCH]: { fontSize: 18, lineHeight: '26px' } },
+              overline: { [TOUCH]: { fontSize: 13, lineHeight: '18px' } },
               body1: { [TOUCH]: { fontSize: 16, lineHeight: '24px' } },
               body2: { [TOUCH]: { fontSize: 15, lineHeight: '22px' } },
               caption: { [TOUCH]: { fontSize: 13, lineHeight: '18px' } },
