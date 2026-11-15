@@ -135,7 +135,10 @@ export const TransactionLanding = () => {
     setSelectedTransaction(null);
   };
 
-  const handleSave = async (data: Partial<Transaction>) => {
+  const handleSave = async (
+    data: Partial<Transaction>,
+    options?: { keepOpen?: boolean }
+  ): Promise<boolean> => {
     const isEdit = !!selectedTransaction;
 
     try {
@@ -163,11 +166,15 @@ export const TransactionLanding = () => {
       toast?.success(
         t(isEdit ? 'transactions.updateSuccess' : 'transactions.createSuccess')
       );
-      handleModalClose();
+      // "Create another" only applies to new transactions; the form resets
+      // itself and the dialog stays open for the next entry.
+      if (!(options?.keepOpen && !isEdit)) handleModalClose();
+      return true;
     } catch {
       toast?.error(
         t(isEdit ? 'transactions.updateFailed' : 'transactions.createFailed')
       );
+      return false;
     }
   };
 

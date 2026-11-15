@@ -110,6 +110,7 @@ const budtrTranslations = {
       actions: 'Actions',
       editTransaction: 'Edit Transaction',
       createTransaction: 'Create New Transaction',
+      createAnother: 'Create another transaction',
       searchLabel: 'Search',
       searchPlaceholder: 'Search, or filter e.g. category:food type:expense',
       searchHint:
@@ -303,6 +304,7 @@ const budtrTranslations = {
       actions: 'Hành động',
       editTransaction: 'Sửa giao dịch',
       createTransaction: 'Tạo giao dịch mới',
+      createAnother: 'Tạo giao dịch khác',
       searchLabel: 'Tìm kiếm',
       searchPlaceholder: 'Tìm kiếm hoặc lọc, vd: category:food type:expense',
       searchHint:

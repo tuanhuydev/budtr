@@ -10,7 +10,10 @@ interface TransactionFormDialogProps {
   open: boolean;
   transaction?: Partial<Transaction> | null;
   assets: Asset[];
-  onSave: (data: Partial<Transaction>) => void;
+  onSave: (
+    data: Partial<Transaction>,
+    options?: { keepOpen?: boolean }
+  ) => Promise<boolean>;
   onClose: () => void;
 }
 
