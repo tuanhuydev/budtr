@@ -111,9 +111,7 @@ const budtrTranslations = {
       editTransaction: 'Edit Transaction',
       createTransaction: 'Create New Transaction',
       searchLabel: 'Search',
-      searchPlaceholder: 'Search, or filter e.g. category:food type:expense',
-      searchHint:
-        'Filters: date, category, type, behavior, source. Use -key:value to exclude, commas for OR, quotes for spaces.',
+      searchPlaceholder: 'Search or try category:food',
       searchInvalidFilter: 'Not a valid filter, searched as text',
       dateOverriddenByQuery: 'The date: filter in the search box is in use',
       confirmDelete: 'Confirm Delete',
@@ -304,9 +302,7 @@ const budtrTranslations = {
       editTransaction: 'Sửa giao dịch',
       createTransaction: 'Tạo giao dịch mới',
       searchLabel: 'Tìm kiếm',
-      searchPlaceholder: 'Tìm kiếm hoặc lọc, vd: category:food type:expense',
-      searchHint:
-        'Bộ lọc: date, category, type, behavior, source. Dùng -key:value để loại trừ, dấu phẩy cho HOẶC, dấu ngoặc kép cho khoảng trắng.',
+      searchPlaceholder: 'Tìm kiếm hoặc thử category:food',
       searchInvalidFilter: 'Bộ lọc không hợp lệ, tìm như văn bản',
       dateOverriddenByQuery: 'Đang dùng bộ lọc date: trong ô tìm kiếm',
       confirmDelete: 'Xác nhận xóa',
