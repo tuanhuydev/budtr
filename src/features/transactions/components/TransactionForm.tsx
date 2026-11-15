@@ -1,6 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, MenuItem, SxProps, Typography } from '@mui/material';
-import { ReactNode, useEffect, useMemo } from 'react';
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  SxProps,
+  Typography,
+} from '@mui/material';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -83,7 +91,11 @@ const getDefaultValues = (tx?: Partial<Transaction>): TransactionFormValues => {
 interface TransactionFormProps {
   transaction?: Partial<Transaction>;
   assets: Asset[];
-  onSave: (data: Partial<Transaction>) => void;
+  /** Resolves true when the save succeeded. */
+  onSave: (
+    data: Partial<Transaction>,
+    options?: { keepOpen?: boolean }
+  ) => Promise<boolean>;
   onCancel: () => void;
 }
 
@@ -128,7 +140,10 @@ export const TransactionForm = ({
     [t]
   );
 
-  const { control, handleSubmit, reset, setValue } =
+  const [createAnother, setCreateAnother] = useState(false);
+  const isEdit = !!transaction;
+
+  const { control, handleSubmit, reset, setValue, setFocus } =
     useForm<TransactionFormValues>({
       resolver: zodResolver(schema),
       defaultValues: getDefaultValues(transaction),
@@ -163,9 +178,15 @@ export const TransactionForm = ({
     reset(getDefaultValues(transaction));
   }, [transaction, reset]);
 
-  const onSubmit = (values: TransactionFormValues) => {
+  const buildPayload = (
+    values: TransactionFormValues
+  ): Partial<Transaction> => {
+    const createdAt = values.createdAt
+      ? new Date(values.createdAt).toISOString()
+      : undefined;
+
     if (values.type === ExpenseType.TRANSFER) {
-      onSave({
+      return {
         type: values.type,
         amount: Number(values.amount),
         category: ExpenseCategory.NONE,
@@ -174,14 +195,11 @@ export const TransactionForm = ({
         target: values.target,
         description: values.description,
         currency: assetCurrency(sourceAsset),
-        createdAt: values.createdAt
-          ? new Date(values.createdAt).toISOString()
-          : undefined,
-      });
-      return;
+        createdAt,
+      };
     }
 
-    onSave({
+    return {
       type: values.type,
       amount: Number(values.amount),
       category: values.category,
@@ -189,10 +207,20 @@ export const TransactionForm = ({
       source: values.source || undefined,
       description: values.description,
       currency: 'VND',
-      createdAt: values.createdAt
-        ? new Date(values.createdAt).toISOString()
-        : undefined,
-    });
+      createdAt,
+    };
+  };
+
+  const onSubmit = async (values: TransactionFormValues) => {
+    const keepOpen = createAnother && !isEdit;
+    const saved = await onSave(buildPayload(values), { keepOpen });
+
+    // Only clear the form once the save succeeded, so a failed save keeps the
+    // user's input.
+    if (saved && keepOpen) {
+      reset(getDefaultValues());
+      setFocus('amount');
+    }
   };
 
   return (
@@ -376,6 +404,19 @@ export const TransactionForm = ({
       </FormField>
 
       <Box sx={actionButtonsContainerSx}>
+        {!isEdit && (
+          <FormControlLabel
+            sx={createAnotherSx}
+            control={
+              <Checkbox
+                size='small'
+                checked={createAnother}
+                onChange={event => setCreateAnother(event.target.checked)}
+              />
+            }
+            label={t('transactions.createAnother')}
+          />
+        )}
         <Button type='button' onClick={onCancel} variant='text' color='primary'>
           {t('common.cancel')}
         </Button>
@@ -414,7 +455,13 @@ const fieldLabelSx: SxProps = {
 
 const actionButtonsContainerSx: SxProps = {
   display: 'flex',
+  alignItems: 'center',
   justifyContent: 'flex-end',
   gap: 1,
   mt: 1,
+};
+
+const createAnotherSx: SxProps = {
+  mr: 1,
+  '& .MuiFormControlLabel-label': { fontSize: '0.875rem' },
 };
