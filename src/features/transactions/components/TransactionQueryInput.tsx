@@ -1,4 +1,3 @@
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Autocomplete,
@@ -141,9 +140,6 @@ export const TransactionQueryInput = ({
               startAdornment: (
                 <>
                   <InputAdornment position='start'>
-                    <Tooltip title={t('transactions.searchHint')}>
-                      <InfoOutlinedIcon fontSize='small' color='action' />
-                    </Tooltip>
                     <SearchIcon fontSize='small' color='action' />
                   </InputAdornment>
                   {params.InputProps.startAdornment}
